@@ -1,9 +1,9 @@
-import Feather from '@expo/vector-icons/Feather';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import user from '../../Data/user';
+import FocusableTextInput from '../../components/FocusableTextInput';
 
 function Login() {
 
@@ -25,7 +25,7 @@ function Login() {
             <View style={Style.formContainer}>
                 <View style={Style.inputContainer}>
                     <Text>Username</Text>
-                    <TextInput placeholder="Enter your username"
+                    <FocusableTextInput placeholder="Enter your username"
                         placeholderTextColor="gray"
                         value={username}
                         onChangeText={(text) => setUsername(text)}
@@ -33,17 +33,12 @@ function Login() {
                 </View>
                 <View style={Style.inputContainer}>
                     <Text>Password</Text>
-                    <View style={Style.passwordContainer}>
-                        <TextInput placeholder="Enter your password"
-                            placeholderTextColor="gray"
-                            secureTextEntry={!showPassword}
-                            value={password}
-                            onChangeText={(text) => setPassword(text)}
-                            style={[Style.input, { paddingRight: 40 }]} />
-                        {password.length > 0 && <Feather name={!showPassword ? "eye-off" : "eye"}
-                            size={24} color="gray" style={Style.visibleIcon} onPress={() => { setShowPassword(!showPassword); }} />}
-
-                    </View>
+                    <FocusableTextInput placeholder="Enter your password"
+                        placeholderTextColor="gray"
+                        secureTextEntry={!showPassword}
+                        value={password}
+                        onChangeText={(text) => setPassword(text)}
+                        style={Style.input} />
                 </View>
                 <TouchableOpacity style={Style.button} onPress={() => {
                     if (username && password) {
@@ -116,7 +111,6 @@ const Style = StyleSheet.create({
     input: {
         width: '100%',
         borderWidth: 1,
-        borderColor: 'gray',
         padding: 10,
         borderRadius: 5,
         marginTop: 5,

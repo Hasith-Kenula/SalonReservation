@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import FocusableTextInput from '../../components/FocusableTextInput';
 const Registration = () => {
     const [role, setRole] = useState('Customer');
     const [showPassword, setShowPassword] = useState(false);
@@ -8,10 +9,15 @@ const Registration = () => {
 
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "white", height: '100%' }}>
+            <View style={Style.headings}>
+                <Text style={Style.title}>Registration</Text>
+            </View>
             <ScrollView style={Style.container} keyboardDismissMode='on-drag' keyboardShouldPersistTaps='handled'>
-                <Text style={Style.title}>Register</Text>
-                <Text style={{ paddingBottom: 5 }}>Register as {role}</Text>
+                <View style={{ paddingBottom: 5, flexDirection: 'row', alignContent: 'center' }}>
+                    <Text style={Style.subTitle}>Register as </Text>
+                    <Text style={[Style.subTitle, { fontWeight: '500' }]}>{role}</Text>
+                </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <TouchableOpacity style={Style.button} onPress={() => setRole('Customer')}>
                         <Text style={Style.btnText}>Customer</Text>
@@ -22,31 +28,31 @@ const Registration = () => {
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Name' : 'Salon Name'}</Text>
-                    <TextInput placeholder={role == 'Customer' ? 'Enter your name' : 'Enter your salon name'}
+                    <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your name' : 'Enter your salon name'}
                         placeholderTextColor="gray"
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Email' : 'Salon Email'}</Text>
-                    <TextInput placeholder="example@gmail.com"
+                    <FocusableTextInput placeholder="example@gmail.com"
                         placeholderTextColor="gray"
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Phone Number' : 'Salon Phone Number'}</Text>
-                    <TextInput placeholder="070 1234567"
+                    <FocusableTextInput placeholder="070 1234567"
                         placeholderTextColor="gray"
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Location' : 'Salon Location'}</Text>
-                    <TextInput placeholder={role == 'Customer' ? 'Enter your location' : 'Enter salon location'}
+                    <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your location' : 'Enter salon location'}
                         placeholderTextColor="gray"
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>Password</Text>
-                    <TextInput placeholder="Enter your password"
+                    <FocusableTextInput placeholder="Enter your password"
                         placeholderTextColor="gray"
                         secureTextEntry={!showPassword}
                         value={password}
@@ -56,7 +62,7 @@ const Registration = () => {
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>Confirm Password</Text>
-                    <TextInput placeholder="Confirm your password"
+                    <FocusableTextInput placeholder="Confirm your password"
                         placeholderTextColor="gray"
                         secureTextEntry={!showPassword}
                         value={confirmPassword}
@@ -76,19 +82,26 @@ const Registration = () => {
 const Style = StyleSheet.create({
     container: {
         flex: 1,
-        paddingLeft: 10,
-        paddingRight: 10,
-        margin: 5,
-        marginTop: 0,
-
+        paddingHorizontal: 15,
+        paddingTop: 10,
     },
     title: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        alignSelf: 'flex-start',
+        marginLeft: 10,
         fontSize: 30,
         paddingBottom: 10,
         //color: '#3586DB',
         fontWeight: 'bold',
+    },
+    headings: {
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottomColor: 'rgba(131, 131, 131, 0.51)',
+        borderBottomWidth: 1,
+    },
+    subTitle: {
+        fontSize: 25
     },
     button: {
         backgroundColor: '#3586DB',

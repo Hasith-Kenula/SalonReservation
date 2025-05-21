@@ -1,12 +1,16 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+type Service = {
+    service: string;
+    price: string;
+};
+
 type SalonCardProps = {
     name: string;
-    services: string;
+    services: Service[];
     distance: number;
     rate: number;
-    price: string;
 };
 
 const SalonCard = (prop: SalonCardProps) => {
@@ -15,26 +19,27 @@ const SalonCard = (prop: SalonCardProps) => {
     return (
         <TouchableOpacity style={Style.card} onPress={() => {
             router.push({
-                pathname: '/SalonDetail',
+                pathname: '/salonDetail',
                 params: {
                     name: prop.name,
-                    services: prop.services,
+                    services: JSON.stringify(prop.services),
                     distance: prop.distance,
                     rate: prop.rate,
-                    price: prop.price,
                 },
             });
         }}>
             <View>
                 <Text style={Style.title}>{prop.name}</Text>
-                <Text style={Style.description}>{prop.services}</Text>
+                <Text style={Style.description}>{prop.services.map((service) => service.service).join(', ')}</Text>
                 <Text>Distance: {prop.distance}KM</Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
                 <Text style={{ fontSize: 16, color: '#333' }}>Rating: {prop.rate}</Text>
-                <Text style={{ fontSize: 16, color: '#333' }}>Price Range: {prop.price}</Text>
+                <Text style={{ fontSize: 16, color: '#333' }}>Price Range: {
+                    `${Math.min(...prop.services.map(s => Number(s.price)))} - ${Math.max(...prop.services.map(s => Number(s.price)))}`
+                }</Text>
             </View>
-        </TouchableOpacity>
+        </TouchableOpacity >
     )
 }
 const Style = StyleSheet.create({
@@ -50,7 +55,7 @@ const Style = StyleSheet.create({
         },
         shadowOpacity: 0.2,
         shadowRadius: 1.41,
-        elevation: 2,
+        elevation: 5,
         marginBottom: 10,
     },
     title: {

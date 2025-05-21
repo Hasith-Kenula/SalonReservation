@@ -1,4 +1,4 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput } from 'react-native'
 import SalonCard from '../../components/SalonCard'
 
 const SalonBrowser = () => {
@@ -9,7 +9,10 @@ const SalonBrowser = () => {
       distance: '2',
       rating: 4.5,
       price: "100 - 200",
-      services: ['Haircuts', 'Styling'],
+      services: [
+        { service: 'Haircuts', price: 100 },
+        { service: 'Styling', price: 120 },
+      ],
     },
     {
       id: 2,
@@ -17,7 +20,11 @@ const SalonBrowser = () => {
       distance: '5',
       rating: 4.0,
       price: "50 - 100",
-      services: ['Haircuts', 'Styling', 'Coloring'],
+      services: [
+        { service: 'Haircuts', price: 60 },
+        { service: 'Styling', price: 80 },
+        { service: 'Coloring', price: 100 },
+      ],
     },
     {
       id: 3,
@@ -25,7 +32,12 @@ const SalonBrowser = () => {
       distance: '3',
       rating: 4.8,
       price: "150 - 300",
-      services: ['Haircuts', 'Styling', 'Coloring', 'Nail Care'],
+      services: [
+        { service: 'Haircuts', price: 150 },
+        { service: 'Styling', price: 180 },
+        { service: 'Coloring', price: 220 },
+        { service: 'Nail Care', price: 200 },
+      ],
     },
     {
       id: 4,
@@ -33,7 +45,11 @@ const SalonBrowser = () => {
       distance: '4',
       rating: 4.2,
       price: "80 - 150",
-      services: ['Haircuts', 'Styling', 'Makeup'],
+      services: [
+        { service: 'Haircuts', price: 90 },
+        { service: 'Styling', price: 110 },
+        { service: 'Makeup', price: 150 },
+      ],
     },
     {
       id: 5,
@@ -41,7 +57,12 @@ const SalonBrowser = () => {
       distance: '6',
       rating: 4.6,
       price: "120 - 250",
-      services: ['Haircuts', 'Styling', 'Coloring', 'Nail Care'],
+      services: [
+        { service: 'Haircuts', price: 130 },
+        { service: 'Styling', price: 150 },
+        { service: 'Coloring', price: 200 },
+        { service: 'Nail Care', price: 180 },
+      ],
     },
     {
       id: 6,
@@ -49,7 +70,11 @@ const SalonBrowser = () => {
       distance: '7',
       rating: 4.3,
       price: "90 - 180",
-      services: ['Haircuts', 'Styling', 'Coloring'],
+      services: [
+        { service: 'Haircuts', price: 100 },
+        { service: 'Styling', price: 120 },
+        { service: 'Coloring', price: 180 },
+      ],
     },
     {
       id: 7,
@@ -57,7 +82,12 @@ const SalonBrowser = () => {
       distance: '8',
       rating: 4.7,
       price: "200 - 400",
-      services: ['Haircuts', 'Styling', 'Coloring', 'Nail Care'],
+      services: [
+        { service: 'Haircuts', price: 220 },
+        { service: 'Styling', price: 250 },
+        { service: 'Coloring', price: 300 },
+        { service: 'Nail Care', price: 280 },
+      ],
     },
     {
       id: 8,
@@ -65,7 +95,10 @@ const SalonBrowser = () => {
       distance: '9',
       rating: 4.1,
       price: "70 - 130",
-      services: ['Haircuts', 'Styling'],
+      services: [
+        { service: 'Haircuts', price: 70 },
+        { service: 'Styling', price: 90 },
+      ],
     },
     {
       id: 9,
@@ -73,7 +106,11 @@ const SalonBrowser = () => {
       distance: '10',
       rating: 4.4,
       price: "110 - 220",
-      services: ['Haircuts', 'Styling', 'Coloring'],
+      services: [
+        { service: 'Haircuts', price: 120 },
+        { service: 'Styling', price: 140 },
+        { service: 'Coloring', price: 220 },
+      ],
     },
     {
       id: 10,
@@ -81,13 +118,16 @@ const SalonBrowser = () => {
       distance: '11',
       rating: 4.9,
       price: "150 - 300",
-      services: ['Haircuts', 'Styling', 'Makeup'],
+      services: [
+        { service: 'Haircuts', price: 160 },
+        { service: 'Styling', price: 180 },
+        { service: 'Makeup', price: 300 },
+      ],
     },
-    // Add more salons as needed
   ]
   return (
     <SafeAreaView style={Style.container}>
-      <View>
+      <ScrollView>
         <Text>Salons</Text>
         <TextInput
           placeholder="Search for salons"
@@ -112,13 +152,12 @@ const SalonBrowser = () => {
             <SalonCard
               name={item.name}
               distance={parseInt(item.distance)}
-              price={item.price}
               rate={item.rating}
-              services={item.services.join(', ')}
+              services={item.services.map(s => ({ service: s.service, price: String(s.price) }))}
             />
           )}
         />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   )
 }

@@ -80,8 +80,6 @@ const Style = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 20,
     },
     inputContainer: {
         marginBottom: 10,
