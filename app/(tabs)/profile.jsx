@@ -1,24 +1,50 @@
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from 'expo-router';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
+import { useEffect, useState } from 'react';
+
 const Profile = () => {
   const navigation = useNavigation();
   const router = useRouter();
 
-  const user = {
+  const [user, setUser] = useState({
     name: 'Jane Doe',
-    email: 'jane.doe@email.com',
+    phone: 'jane.doe@email.com',
+    id: '',
     avatar: 'https://ui-avatars.com/api/?name=Jane+Doe'
-  };
+  });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userJson = await AsyncStorage.getItem('user');
+      if (userJson) {
+        try {
+          const parsedUser = JSON.parse(userJson);
+          setUser({
+            name: parsedUser.fullName || 'Jane Doe',
+            id: parsedUser.customerID,
+            phone: parsedUser.email || 'jane.doe@email.com',
+            avatar: parsedUser.avatar || 'https://ui-avatars.com/api/?name=Jane+Doe'
+          });
+        } catch (e) {
+          // fallback to default user
+        }
+      }
+    };
+    fetchUser();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.profileSection}>
         <Image source={{ uri: user.avatar }} style={styles.avatar} />
+        <Text style={styles.name}>{user.id}</Text>
         <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+        <Text style={styles.email}>{user.phone}</Text>
       </View>
 
       <View style={styles.buttonSection}>

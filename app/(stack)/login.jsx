@@ -1,8 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import user from '../../Data/user';
 import FocusableTextInput from '../../components/FocusableTextInput';
 
 function Login() {
@@ -14,17 +14,56 @@ function Login() {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('Customer');
 
     const [showPassword, setShowPassword] = useState(false);
+
+    const handleLogin = async () => {
+        console.log("clicked");
+        if (username && password) {
+            try {
+                const response = await fetch('http://192.168.1.2:3000/customers/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: username, password: password })
+
+                });
+                const data = await response.json();
+                console.log(data);
+                if (data.message == 'successful') {
+                    await AsyncStorage.setItem('isLoggedIn', 'true');
+                    await AsyncStorage.setItem('user', JSON.stringify(data.Data));
+                    router.replace('/');
+                } else {
+                    alert('Invalid username or password');
+                }
+            } catch (error) {
+                alert('Something went wrong!');
+            }
+        } else {
+            alert('Please fill in all fields');
+        }
+    }
 
     return (
         <SafeAreaView style={Style.mainContainer}>
             <View style={[Style.title]}>
                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#3586DB' }}>Welcome to {AppName}</Text>
             </View>
+            <View>
+                <Text style={Style.label}>Select your role:</Text>
+            </View>
+            <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between' }}>
+                <TouchableOpacity style={[Style.button, { width: '45%' }]} onPress={() => { setRole('Customer') }}>
+                    <Text style={Style.btnText}>Customer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[Style.button, { width: '45%' }]} onPress={() => { setRole('Salon') }}>
+                    <Text style={Style.btnText}>Salon Owner</Text>
+                </TouchableOpacity>
+            </View>
             <View style={Style.formContainer}>
                 <View style={Style.inputContainer}>
-                    <Text>Username</Text>
+                    <Text style={Style.label}>Username</Text>
                     <FocusableTextInput placeholder="Enter your username"
                         placeholderTextColor="gray"
                         value={username}
@@ -32,7 +71,7 @@ function Login() {
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
-                    <Text>Password</Text>
+                    <Text style={Style.label}>Password</Text>
                     <FocusableTextInput placeholder="Enter your password"
                         placeholderTextColor="gray"
                         secureTextEntry={!showPassword}
@@ -40,35 +79,16 @@ function Login() {
                         onChangeText={(text) => setPassword(text)}
                         style={Style.input} />
                 </View>
-                <TouchableOpacity style={Style.button} onPress={() => {
-                    if (username && password) {
-                        const userData = user.find((user) => user.name === username && user.password === password);
-                        if (userData) {
-                            router.push({
-                                pathname: '/',
-                                params: {
-                                    name: userData.name,
-                                    email: userData.email,
-                                    phone: userData.phone,
-                                    location: userData.location,
-                                }
-                            }
-                            );
-                        } else {
-                            alert('Invalid username or password');
-                        }
-                    }
-                }}>
-                    <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
+                <TouchableOpacity style={[Style.button]} onPress={() => { handleLogin() }}>
+                    <Text style={Style.btnText}>Login as {role}</Text>
                 </TouchableOpacity>
-                <View>
-                    <Text style={{ paddingTop: 10 }}>Don't have an account?{' '}
-                        <Pressable onPress={() => {
-                            router.push('/registration');
-                        }}>
-                            <Text style={{ color: '#3586DB', fontWeight: 'bold', }}> Register</Text>
-                        </Pressable>
-                    </Text>
+                <View style={{ paddingTop: 10, flexDirection: 'row', alignItems: 'center' }}>
+                    <Text>Don't have an account?{' '}</Text>
+                    <Pressable style={{}} onPress={() => {
+                        router.push('/registration');
+                    }}>
+                        <Text style={{ color: '#3586DB', fontWeight: 'bold', textDecorationLine: 'underline' }}> Register</Text>
+                    </Pressable>
                 </View>
                 <View>
                     <Text>Forgot Password?</Text>
@@ -87,11 +107,11 @@ const Style = StyleSheet.create({
     title: {
         flex: 5,
         justifyContent: 'center',
-        marginTop: 70,
+        marginTop: 50,
         alignItems: 'center',
     },
     formContainer: {
-        flex: 25,
+        flex: 15,
         justifyContent: 'center',
     },
     inputContainer: {
@@ -107,6 +127,12 @@ const Style = StyleSheet.create({
         position: 'absolute',
         alignSelf: 'center',
         right: 10,
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        paddingBottom: 5
+
     },
     input: {
         width: '100%',
@@ -126,5 +152,10 @@ const Style = StyleSheet.create({
         backgroundColor: '#3586DB',
         borderRadius: 5,
     },
+    btnText: {
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: 'bold'
+    }
 });
 export default Login

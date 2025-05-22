@@ -3,7 +3,6 @@ import FocusableTextInput from '../../components/FocusableTextInput';
 import SalonCard from '../../components/SalonCard';
 
 
-
 const index = () => {
   const salons = [
     {
