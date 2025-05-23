@@ -13,17 +13,32 @@ const _layout = () => {
                     headerShown: false,
                 }} />
             <Tabs.Screen
-                name="setting"
+                name="salonHome"
                 options={{
-                    title: 'Settings',
+                    title: 'Home',
                     headerShown: false,
-                }} />
+                }}
+            />
             <Tabs.Screen
                 name="profile"
                 options={{
                     title: 'Profile',
                     headerShown: false,
                 }} />
+            <Tabs.Screen
+                name="setting"
+                options={{
+                    title: 'Settings',
+                    headerShown: false,
+                }} />
+            <Tabs.Screen
+                name="detail"
+                options={{
+                    title: 'Detail',
+                    headerShown: false,
+                }}
+            />
+
 
         </Tabs>
     )

@@ -22,7 +22,15 @@ function Login() {
         console.log("clicked");
         if (username && password) {
             try {
-                const response = await fetch('http://192.168.1.2:3000/customers/login', {
+                let apiUrl = '';
+
+                if (role == 'Customer') {
+                    apiUrl = 'http://192.168.1.2:3000/customers/login';
+
+                } else {
+                    apiUrl = 'http://192.168.1.2:3000/salons/login'
+                }
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone: username, password: password })
@@ -30,17 +38,18 @@ function Login() {
                 });
                 const data = await response.json();
                 console.log(data);
-                if (data.message == 'successful') {
+                if (data.success) {
                     await AsyncStorage.setItem('isLoggedIn', 'true');
                     await AsyncStorage.setItem('user', JSON.stringify(data.Data));
                     await AsyncStorage.setItem('role', role);
 
-                    router.replace('/home');
+                    role == 'Customer' ? router.replace('/home') : router.replace('/salonHome');;
+
                 } else {
-                    alert('Invalid username or password');
+                    alert(data.message);
                 }
             } catch (error) {
-                alert('Something went wrong!');
+                alert('Something went wrong!' + error);
             }
         } else {
             alert('Please fill in all fields');

@@ -1,7 +1,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -16,23 +16,28 @@ const Profile = () => {
     name: 'Unknown',
     address: "Unknown",
     phone: 'Unknown',
-    avatar: 'https://ui-avatars.com/api/?name=Jane+Doe'
+    avatar: 'https://ui-avatars.com/api/?name=Jane+Doe',
+    ownerName: 'Unknown'
   });
-
+  const [role, setRole] = useState('Unknown');
   useFocusEffect(
     React.useCallback(() => {
       const fetchUser = async () => {
         console.log("fetching...");
         const userJson = await AsyncStorage.getItem('user');
-        if (userJson) {
+        const _role = await AsyncStorage.getItem('role');
+        if (userJson && _role) {
           try {
             const parsedUser = JSON.parse(userJson);
+            setRole(_role);
             setUser({
-              id: parsedUser.customerID,
-              name: parsedUser.fullName || 'Unknown',
-              address: parsedUser.address,
+              id: parsedUser.customerID || parsedUser.salonID || 'Unknown',
+              name: parsedUser.fullName || parsedUser.salonName || 'Unknown',
+              address: parsedUser.address || 'Unknown',
               phone: parsedUser.phone || 'Unknown',
-              avatar: parsedUser.avatar || 'https://ui-avatars.com/api/?name=Jane+Doe'
+              avatar: parsedUser.avatar || 'https://ui-avatars.com/api/?name=Jane+Doe',
+              ownerName: parsedUser.ownerName || 'Unknown',
+
             });
           } catch (e) {
             // fallback to default user
@@ -51,38 +56,50 @@ const Profile = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.profileSection}>
-        <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        <Text style={styles.userName}>{user.name}</Text>
-        <View style={styles.infoBox}>
-          <Text style={styles.label}>User ID</Text>
-          <Text style={styles.value}>{user.id}</Text>
-        </View>
-        <View style={styles.infoBox}>
-          <Text style={styles.label}>Address</Text>
-          <Text style={styles.value}>{user.address}</Text>
-        </View>
-        <View style={styles.infoBox}>
-          <Text style={styles.label}>Phone</Text>
-          <Text style={styles.value}>{user.phone}</Text>
-        </View>
+    <SafeAreaView style={{ flex: 1, flexDirection: 'column' }}>
+      <View style={styles.headings}>
+        <Text style={styles.title}>Profile</Text>
       </View>
+      <View style={styles.container}>
+        <View style={styles.profileSection}>
+          <Image source={{ uri: user.avatar }} style={styles.avatar} />
+          <Text style={styles.userName}>{user.name}</Text>
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>{role == 'Customer' ? 'User' : 'Salon'} ID</Text>
+            <Text style={styles.value}>{user.id}</Text>
+          </View>
+          {role == 'Salon' &&
+            (
+              <View style={styles.infoBox}>
+                <Text style={styles.label}>Owner Name</Text>
+                <Text style={styles.value}>{user.ownerName}</Text>
+              </View>
+            )}
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Address</Text>
+            <Text style={styles.value}>{user.address}</Text>
+          </View>
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Phone</Text>
+            <Text style={styles.value}>{user.phone}</Text>
+          </View>
+        </View>
 
-      <View style={styles.buttonSection}>
-        <Pressable
-          style={[styles.button, { backgroundColor: '#3586DB' }]}
-          onPress={() => router.push('/editProfile')}
-        >
-          <Text style={styles.buttonText}>Edit Profile</Text>
-        </Pressable>
+        <View style={styles.buttonSection}>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#3586DB' }]}
+            onPress={() => router.push('/editProfile')}
+          >
+            <Text style={styles.buttonText}>Edit Profile</Text>
+          </TouchableOpacity>
 
-        <Pressable
-          style={[styles.button, { backgroundColor: '#e74c3c' }]}
-          onPress={() => { handleLogout() }}
-        >
-          <Text style={styles.buttonText}>Logout</Text>
-        </Pressable>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#e74c3c' }]}
+            onPress={() => { handleLogout() }}
+          >
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   )
@@ -91,12 +108,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9f9f9',
-    padding: 20,
+    paddingHorizontal: 20,
     paddingBottom: 80,
+  },
+  title: {
+    alignSelf: 'flex-start',
+    marginLeft: 10,
+    fontSize: 30,
+    paddingBottom: 10,
+    //color: '#3586DB',
+    fontWeight: 'bold',
+  },
+  headings: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomColor: 'rgba(131, 131, 131, 0.51)',
+    borderBottomWidth: 1,
   },
   profileSection: {
     alignItems: 'center',
-    marginVertical: 30,
+    marginVertical: 20,
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
@@ -139,9 +171,9 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   buttonSection: {
-    marginTop: 30,
+    marginTop: 10,
     flex: 1,
-    justifyContent: 'flex-end',
+    flexDirection: 'column'
   },
   button: {
     padding: 16,

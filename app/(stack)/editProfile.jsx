@@ -95,7 +95,7 @@ const EditProfile = () => {
             const result = await response.json();
             if (result.success) {
                 await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-                alert('Profile updated successfully');
+                alert(result.message);
             } else {
                 alert('Failed to update profile');
                 console.log(`URL: ${apiUrl} \n Payload: ${JSON.stringify(payload)} \n Response: ${JSON.stringify(result)}`);

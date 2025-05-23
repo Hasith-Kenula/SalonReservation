@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import FocusableTextInput from '../../components/FocusableTextInput';
 import SalonCard from '../../components/SalonCard';
 
@@ -131,7 +131,7 @@ const index = () => {
   ]
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white', height: '100%' }}>
-      <StatusBar barStyle="dark-content" />
+
       <View style={Style.headings}>
         <Text style={Style.title}>Salons</Text>
       </View>
