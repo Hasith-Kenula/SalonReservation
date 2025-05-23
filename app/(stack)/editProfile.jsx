@@ -1,9 +1,111 @@
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FocusableTextInput from '../../components/FocusableTextInput';
 
 const EditProfile = () => {
+
+    const [user, setUser] = useState({});
     const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const [role, setRole] = useState('');
+    const [salonID, setSalonID] = useState('');
+    const [customerID, setCustomerID] = useState('');
+    const [ownerName, setOwnerName] = useState('');
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userJson = await AsyncStorage.getItem('user');
+            const _role = await AsyncStorage.getItem('role');
+            if (userJson && _role) {
+                try {
+                    const user = JSON.parse(userJson);
+
+                    setUser(user);
+
+                    setPhone(user.phone);
+                    setAddress(user.address);
+                    setRole(_role)
+
+                    if (_role == 'Customer') {
+                        setCustomerID(user.customerID)
+                        setName(user.fullName);
+                    } else {
+                        setSalonID(user.salonID);
+                        setName(user.salonName);
+                        setOwnerName(user.ownerName);
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        }
+        fetchUser();
+    }, []);
+
+    const handleSave = async () => {
+        console.log("click Save");
+        try {
+            let updatedUser;
+            let apiUrl = '';
+            let payload = {};
+            if (role == 'Customer') {
+                updatedUser = {
+                    ...user,
+                    fullName: name,
+                    phone: phone,
+                    address: address,
+                }
+                apiUrl = 'http://192.168.1.2:3000/customers/update';
+                payload = {
+                    customerID: customerID,
+                    fullName: name,
+                    phone: phone,
+                    address: address
+                };
+
+
+            } else {
+                updatedUser = {
+                    ...user,
+                    salonName: name,
+                    ownerName: ownerName,
+                    phone: phone,
+                    address: address,
+                }
+                apiUrl = 'http://192.168.1.2:3000/salons/update'
+                payload = {
+                    salonID: salonID,
+                    salonName: name,
+                    ownerName: ownerName,
+                    phone: phone,
+                    address: address
+                }
+
+
+
+            }
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const result = await response.json();
+            if (result.success) {
+                await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+                alert('Profile updated successfully');
+            } else {
+                alert('Failed to update profile');
+                console.log(`URL: ${apiUrl} \n Payload: ${JSON.stringify(payload)} \n Response: ${JSON.stringify(result)}`);
+            }
+
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
     return (
         <SafeAreaView style={{ marginHorizontal: 10, height: '100%' }}>
             <View style={Style.headings}>
@@ -11,27 +113,38 @@ const EditProfile = () => {
             </View>
             <ScrollView showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps='handled'>
-                <Text style={[Style.subTitle]}>User Profile</Text>
+                <Text style={[Style.subTitle]}>{role == 'Customer' ? 'User' : 'Salon'} Profile</Text>
                 <View style={Style.inputContainer}>
-                    <Text style={Style.label}>Name</Text>
+                    <Text style={Style.label}>{role == 'Customer' ? 'Full' : 'Salon'} Name</Text>
                     <FocusableTextInput placeholder="Enter your name"
                         value={name}
                         onChangeText={(text) => setName(text)}
                     />
                 </View>
-                <View style={Style.inputContainer}>
+                {/* <View style={Style.inputContainer}>
                     <Text style={Style.label}>Email</Text>
                     <FocusableTextInput placeholder="Enter your email"
+                        value
+                        onChangeText={(text) => { }}
                     />
-                </View>
+                </View> */}
+                {role == 'Salon' && (
+                    <View style={Style.inputContainer}>
+                        <Text style={Style.label}>Owner Name</Text>
+                        <FocusableTextInput placeholder="Owner Name"
+                            value={ownerName}
+                            onChangeText={(text) => { setOwnerName(text) }}
+                        />
+                    </View>
+                )}
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>Phone Number</Text>
-                    <FocusableTextInput placeholder="Enter your phone number"
+                    <FocusableTextInput placeholder="Enter phone number" value={phone} onChangeText={(text) => { setPhone(text) }}
                     />
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>Location</Text>
-                    <FocusableTextInput placeholder="Enter your location"
+                    <FocusableTextInput placeholder="Enter your location" value={address} onChangeText={(text) => { setAddress(text) }}
                     />
                 </View>
 
@@ -53,7 +166,7 @@ const EditProfile = () => {
                         />
                     </View>
                 </View>
-                <TouchableOpacity style={[Style.button, { padding: 5 }]}>
+                <TouchableOpacity style={[Style.button, { padding: 5 }]} onPress={() => { handleSave() }}>
                     <Text style={Style.btnText}>Save Changes</Text>
                 </TouchableOpacity>
             </ScrollView>

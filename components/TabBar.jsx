@@ -11,7 +11,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
 
   function getIcon(name, focused) {
     switch (name) {
-      case 'index':
+      case 'home':
         return <AntDesign name='home' size={20} color={focused ? colors.primary : colors.secondary} />;
       case 'setting':
         return <AntDesign name='setting' size={20} color={focused ? colors.primary : colors.secondary} />;

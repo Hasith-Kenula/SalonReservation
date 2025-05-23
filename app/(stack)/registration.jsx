@@ -1,11 +1,80 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FocusableTextInput from '../../components/FocusableTextInput';
 const Registration = () => {
     const [role, setRole] = useState('Customer');
     const [showPassword, setShowPassword] = useState(false);
+
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const [ownerName, setOwnerName] = useState('');
+
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    const handleRegister = async () => {
+        try {
+            let apiUrl = '';
+            let payload = {}
+
+            if (role == 'Customer') {
+                if (name && phone && address && password && confirmPassword) {
+                    if (password == confirmPassword) {
+
+                        apiUrl = 'http://192.168.1.2:3000/customers/register';
+                        payload = {
+                            fullName: name,
+                            phone: phone,
+                            address: address,
+                            password: password
+                        }
+                    } else {
+                        alert('Passwords do not match');
+                    }
+
+                } else {
+                    alert('Please fill all the fields');
+                }
+            } else {
+                if (name && phone && address && ownerName && password && confirmPassword) {
+                    if (password == confirmPassword) {
+                        apiUrl = 'http://192.168.1.2:3000/salons/register';
+                        payload = {
+                            salonName: name,
+                            ownerName: ownerName,
+                            phone: phone,
+                            address: address,
+                            password: password
+                        }
+                    } else {
+                        alert('Passwords do not match');
+                    }
+                } else {
+                    alert('Please fill all the fields');
+                }
+            }
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+
+            });
+            console.log(`Phone: ${phone}`);
+            const result = await response.json();
+            console.log(`Result: ${result}`);
+            if (result.success) {
+                alert('Registration successfully');
+                router.replace('/login');
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+
+        }
+
+    }
 
 
     return (
@@ -22,7 +91,7 @@ const Registration = () => {
                     <TouchableOpacity style={Style.button} onPress={() => setRole('Customer')}>
                         <Text style={Style.btnText}>Customer</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={Style.button} onPress={() => setRole('Salon Owner')}>
+                    <TouchableOpacity style={Style.button} onPress={() => setRole('Salon')}>
                         <Text style={Style.btnText}>Salon Owner</Text>
                     </TouchableOpacity>
                 </View>
@@ -30,24 +99,40 @@ const Registration = () => {
                     <Text style={Style.label}>{role == 'Customer' ? 'Name' : 'Salon Name'}</Text>
                     <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your name' : 'Enter your salon name'}
                         placeholderTextColor="gray"
+                        value={name}
+                        onChangeText={(text) => { setName(text) }}
                         style={Style.input} />
                 </View>
-                <View style={Style.inputContainer}>
+                {(role == 'Salon') &&
+                    <View style={Style.inputContainer}>
+                        <Text style={Style.label}>Owner Name</Text>
+                        <FocusableTextInput placeholder="Enter owner name"
+                            value={ownerName}
+                            onChangeText={(text) => { setOwnerName(text) }}
+                            placeholderTextColor="gray"
+                            style={Style.input} />
+                    </View>
+                }
+                {/* <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Email' : 'Salon Email'}</Text>
                     <FocusableTextInput placeholder="example@gmail.com"
                         placeholderTextColor="gray"
                         style={Style.input} />
-                </View>
+                </View> */}
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Phone Number' : 'Salon Phone Number'}</Text>
                     <FocusableTextInput placeholder="070 1234567"
+                        value={phone}
+                        onChangeText={(text) => { setPhone(text) }}
                         placeholderTextColor="gray"
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
-                    <Text style={Style.label}>{role == 'Customer' ? 'Location' : 'Salon Location'}</Text>
-                    <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your location' : 'Enter salon location'}
+                    <Text style={Style.label}>{role == 'Customer' ? 'Address' : 'Salon Address'}</Text>
+                    <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your address' : 'Enter salon address'}
                         placeholderTextColor="gray"
+                        value={address}
+                        onChangeText={(text) => { setAddress(text) }}
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
@@ -71,7 +156,7 @@ const Registration = () => {
                     />
                 </View>
                 <View style={Style.inputContainer}>
-                    <TouchableOpacity style={[Style.button, { alignSelf: 'center', width: '100%' }]} onPress={() => { }}>
+                    <TouchableOpacity style={[Style.button, { alignSelf: 'center', width: '100%' }]} onPress={() => { handleRegister() }}>
                         <Text style={Style.btnText}>Register as {role == 'Customer' ? 'Customer' : 'Salon'}</Text>
                     </TouchableOpacity>
                 </View>

@@ -33,7 +33,9 @@ function Login() {
                 if (data.message == 'successful') {
                     await AsyncStorage.setItem('isLoggedIn', 'true');
                     await AsyncStorage.setItem('user', JSON.stringify(data.Data));
-                    router.replace('/');
+                    await AsyncStorage.setItem('role', role);
+
+                    router.replace('/home');
                 } else {
                     alert('Invalid username or password');
                 }

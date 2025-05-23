@@ -1,9 +1,21 @@
+import { useRouter } from 'expo-router';
 import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import FocusableTextInput from '../../components/FocusableTextInput';
 import SalonCard from '../../components/SalonCard';
 
 
 const index = () => {
+  const router = useRouter();
+  // useEffect(() => {
+  //   const checkLoginStatus = async () => {
+  //     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+  //     if (!(isLoggedIn === 'true')) {
+  //       router.replace('/login');
+  //     }
+  //   }
+  //   checkLoginStatus();
+  // }, [])
+
   const salons = [
     {
       id: 1,

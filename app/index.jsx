@@ -10,7 +10,7 @@ export default function Splash() {
         const checkLogin = async () => {
             const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
             if (isLoggedIn === 'true') {
-                router.replace('/'); // Go to home (index)
+                router.replace('/home'); // Go to home (index)
             } else {
                 router.replace('/login'); // Go to login
             }
