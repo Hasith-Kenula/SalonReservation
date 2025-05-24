@@ -74,12 +74,13 @@ function Login() {
             </View>
             <View style={Style.formContainer}>
                 <View style={Style.inputContainer}>
-                    <Text style={Style.label}>Username</Text>
-                    <FocusableTextInput placeholder="Enter your username"
+                    <Text style={Style.label}>Phone Number</Text>
+                    <FocusableTextInput placeholder="ex: 0701234567"
                         placeholderTextColor="gray"
                         value={username}
                         onChangeText={(text) => setUsername(text)}
-                        style={Style.input} />
+                        style={Style.input}
+                        keyboardType="phone-pad" />
                 </View>
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>Password</Text>

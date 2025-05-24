@@ -62,21 +62,26 @@ const ServiceManagement = () => {
     };
 
     const handleAddService = async () => {
-        const response = await fetch('http://192.168.1.2:3000/services/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ serviceName, servicePrice, durationMinutes, salonID })
-        })
-        const result = await response.json();
-        if (result.success) {
-            setServices([...services, result.data]);
-            resetForm();
-            alert('Service added successfully');
+        if (serviceName && servicePrice && durationMinutes) {
+
+            const response = await fetch('http://192.168.1.2:3000/services/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ serviceName, servicePrice, durationMinutes, salonID })
+            })
+            const result = await response.json();
+            if (result.success) {
+                setServices([...services, result.data]);
+                resetForm();
+                alert('Service added successfully');
+            } else {
+                console.log(result.message);
+                alert(result.message);
+            }
         } else {
-            console.log(result.message);
-            alert(result.message);
+            alert('Please fill all fields');
         }
     }
 

@@ -1,36 +1,37 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const SalonDetail = () => {
-    const { name, services, distance, rate, price } = useLocalSearchParams();
+    const { name, services, distance, rate, price, ownerName, priceRange, salonID } = useLocalSearchParams();
     const availableServices = typeof services === 'string'
         ? JSON.parse(services)
         : Array.isArray(services)
             ? services
             : [];
 
-    const [selectedServices, setSelectedServices] = useState<{ service: string; price: string }[]>([]);
+    const [selectedServices, setSelectedServices] = useState<{ service: string; price: string; serviceID: string }[]>([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
 
-    const toggleService = (service: { service: string, price: string }) => {
+    const toggleService = (service: { service: string, price: string, serviceID: string }) => {
         const exists = selectedServices.some(
-            (s) => s.service === service.service && s.price === service.price
+            (s) => s.serviceID === service.serviceID
         );
         if (exists) {
             setSelectedServices(selectedServices.filter(
-                (s) => !(s.service === service.service && s.price === service.price)
+                (s) => !(s.serviceID === service.serviceID)
             ));
         } else {
             setSelectedServices([...selectedServices, service]);
         }
     };
 
-    const handleReserve = () => {
+    const handleReserve = async () => {
         console.log('Selected Services:', selectedServices);
         console.log('Selected Service Length:', selectedServices.length);
         if (!selectedServices.length) {
@@ -46,9 +47,47 @@ const SalonDetail = () => {
             return
         }
         // Add your reservation logic here
-        alert(
-            `Reserved ${selectedServices.map((item) => item.service).join(', ')} at ${name}\nDate: ${selectedDate || 'Not set'}\nTime: ${selectedTime || 'Not set'}`
-        );
+        Alert.alert('Confirm Your Reservation', `Reserved ${selectedServices.map((item) => item.service).join(', ')} at ${name}\nDate: ${selectedDate || 'Not set'}\nTime: ${selectedTime || 'Not set'}`, [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Confirm', style: 'default', onPress: async () => {
+                    const userJson = await AsyncStorage.getItem('user');
+                    const user = userJson ? JSON.parse(userJson) : null;
+                    const customerID = user.customerID;
+                    if (!customerID) {
+                        Alert.alert('Error', 'You must be logged in to make a reservation');
+                        return;
+                    }
+                    const arrayOfReservationServices: { serviceID: string }[] = selectedServices.map((service) => ({
+                        serviceID: service.serviceID,
+                    }));
+                    const response = await fetch('http://192.168.1.2:3000/reservations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            salonID: salonID,
+                            customerID: customerID,
+                            resDate: selectedDate,
+                            resTime: selectedTime,
+                            resServices: arrayOfReservationServices,
+                        })
+                    });
+                    const reservationData = await response.json();
+                    if (!reservationData.success) {
+                        Alert.alert('Error', reservationData.message);
+                        return
+                    }
+                    const _resID = reservationData.data.resID;
+
+
+                    Alert.alert('Success', 'Reservation made successfully');
+                    setSelectedServices([]);
+                    setSelectedDate('');
+                    setSelectedTime('');
+
+                }
+            },
+        ]);
     };
 
     return (
@@ -59,17 +98,18 @@ const SalonDetail = () => {
             <ScrollView contentContainerStyle={{ paddingBottom: 30, paddingHorizontal: 15 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled'>
                 <View style={Style.salonTitle}>
                     <Text style={Style.subTitle}>{name}</Text>
+                    <Text style={Style.info}>Owner Name: {ownerName}</Text>
                     <Text style={Style.info}>Services: {availableServices.map((service: any) => `${service.service}`).join(', ')}</Text>
                     <Text style={Style.info}>Distance: {distance} KM</Text>
                     <Text style={Style.info}>Rating: {rate}</Text>
-                    <Text style={Style.info}>Price Range: {`${Math.min(...availableServices.map((service: any) => Number(service.price)))} - ${Math.max(...availableServices.map((service: any) => Number(service.price)))}`}</Text>
+                    <Text style={Style.info}>Price Range: {priceRange}</Text>
                 </View>
 
                 <View style={Style.section}>
                     <Text style={Style.sectionTitle}>Select Services</Text>
                     {availableServices.map((service: any) => {
                         const isSelected = selectedServices.some(
-                            (s) => s.service === service.service && s.price === service.price
+                            (s) => s.serviceID === service.serviceID
                         );
                         return (
                             <TouchableOpacity

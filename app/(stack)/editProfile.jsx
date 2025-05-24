@@ -58,9 +58,8 @@ const EditProfile = () => {
                     phone: phone,
                     address: address,
                 }
-                apiUrl = 'http://192.168.1.2:3000/customers/update';
+                apiUrl = `http://192.168.1.2:3000/customers/update/${customerID}`;
                 payload = {
-                    customerID: customerID,
                     fullName: name,
                     phone: phone,
                     address: address
@@ -75,9 +74,8 @@ const EditProfile = () => {
                     phone: phone,
                     address: address,
                 }
-                apiUrl = 'http://192.168.1.2:3000/salons/update'
+                apiUrl = `http://192.168.1.2:3000/salons/update/${salonID}`
                 payload = {
-                    salonID: salonID,
                     salonName: name,
                     ownerName: ownerName,
                     phone: phone,
