@@ -52,7 +52,7 @@ const SalonHome = () => {
                 <TouchableOpacity style={styles.actionButton} onPress={() => { router.push('/serviceManagement') }}>
                     <Text style={styles.actionText}>Manage Services</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={() => { }}>
+                <TouchableOpacity style={styles.actionButton} onPress={() => { router.push('/staffManagement') }}>
                     <Text style={styles.actionText}>Manage Staff</Text>
                 </TouchableOpacity>
             </View>

@@ -8,6 +8,7 @@ const _layout = () => {
             <Stack.Screen name="salonBrowser" options={{ headerShown: false }} />
             <Stack.Screen name="salonDetail" options={{ headerShown: false }} />
             <Stack.Screen name='serviceManagement' options={{ headerShown: false }} />
+            <Stack.Screen name='staffManagement' options={{ headerShown: false }} />
             <Stack.Screen name="editProfile" options={{
                 headerShown: false,
                 title: 'Edit Profile',

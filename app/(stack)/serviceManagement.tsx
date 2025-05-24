@@ -1,26 +1,29 @@
+import ServiceCard from '@/components/ServiceCard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Keyboard, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // const initialServices = [
 //     { id: '1', name: 'Haircut', price: '2000', duration: '30' },
 //     { id: '2', name: 'Coloring', price: '3500', duration: '60' },
 // ];
 
-const ServiceManagement = () => {
-    const [services, setServices] = useState([{
-        serviceID: '',
-        salonID: 'unknown',
-        serviceName: 'unknown',
-        servicePrice: 'unknown',
-        durationMinutes: 'unknown',
+type Service = {
+    serviceID: string;
+    salonID: string;
+    serviceName: string;
+    servicePrice: number;
+    durationMinutes: number;
+};
 
-    }]);
+const ServiceManagement = () => {
+    const [services, setServices] = useState<Service[]>([]);
     const [serviceName, setServiceName] = useState('');
     const [servicePrice, setServicePrice] = useState('');
     const [durationMinutes, setServiceDuration] = useState('');
-    const [serviceID, setServiceID] = useState(null);
+    const [serviceID, setServiceID] = useState('');
     const [salonID, setSalonID] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     //fetch data from API
     useEffect(() => {
@@ -29,19 +32,21 @@ const ServiceManagement = () => {
             if (salon) {
                 const parsedSalon = JSON.parse(salon);
                 setSalonID(parsedSalon.salonID);
-            }
-            const response = await fetch('http://192.168.1.2:3000/services/', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            const result = await response.json();
-            console.log("Data: " + result.data);
+                console.log(`SalonID: ${salonID}`);
+                console.log(`SalonID: ${parsedSalon.salonID}`);
+                const response = await fetch(`http://192.168.1.2:3000/services/${parsedSalon.salonID}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const result = await response.json();
+                console.log("Data: " + result.data);
 
-            if (result.success) {
-                setServices(result.data);
-            } else {
-                console.log(result.message);
-                alert(result.message);
+                if (result.success) {
+                    setServices(result.data);
+                } else {
+                    console.log(result.message);
+                    alert(result.message);
+                }
             }
 
         }
@@ -49,10 +54,11 @@ const ServiceManagement = () => {
     }, []);
 
     const resetForm = () => {
+        setIsEditing(false);
         setServiceName('');
         setServicePrice('');
         setServiceDuration('');
-        setServiceID(null);
+        setServiceID('');
     };
 
     const handleAddService = async () => {
@@ -85,11 +91,64 @@ const ServiceManagement = () => {
     //         }
     //     ]);
     // };
-    const handleDelete = async (id) => {
-
+    const handleDelete = async (id: string) => {
+        Alert.alert('Delete Service', 'Are you sure you want to delete this service?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete', style: 'destructive', onPress: async () => {
+                    const response = await fetch(`http://192.168.1.2:3000/services/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+                    const result = await response.json();
+                    if (result.success) {
+                        setServices(services.filter(s => s.serviceID !== id));
+                        alert(result.message);
+                    } else {
+                        console.log(result.message);
+                        alert(result.message);
+                    }
+                }
+            }
+        ])
     }
-    const handleEdit = (id) => {
+    const handleEdit = async (item: Service) => {
+        setIsEditing(true);
+        setServiceID(item.serviceID);
+        setServiceName(item.serviceName);
+        setServicePrice(item.servicePrice.toString());
+        setServiceDuration(item.durationMinutes.toString());
+    }
 
+    const handleServiceEdit = async (item: Service) => {
+        Keyboard.dismiss();
+        Alert.alert('Edit Service', 'Are you sure you want to edit this service?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Edit', style: 'destructive', onPress: async () => {
+                    const response = await fetch(`http://192.168.1.2:3000/services/${item.serviceID}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            salonID: item.salonID,
+                            serviceName: item.serviceName,
+                            servicePrice: item.servicePrice,
+                            durationMinutes: item.durationMinutes
+                        })
+                    })
+                    const result = await response.json();
+                    if (result.success) {
+                        setServices(services.map(s => s.serviceID === item.serviceID ? { ...s, serviceName: item.serviceName, servicePrice: item.servicePrice, durationMinutes: item.durationMinutes } : s));
+                        resetForm();
+                        // alert(result.message);
+
+                    } else {
+                        console.log(result.message);
+                        alert(result.message);
+                    }
+                }
+            }
+        ]);
     }
     return (
         <SafeAreaView style={{ height: '100%' }}>
@@ -98,6 +157,14 @@ const ServiceManagement = () => {
             </View>
             <View style={styles.container}>
                 <View style={styles.form}>
+                    {isEditing && (
+                        <TextInput
+                            style={[styles.input, { color: 'gray' }]}
+                            placeholderTextColor='gray'
+                            value={`ServiceID: ${serviceID}`}
+                            readOnly
+                        />
+                    )}
                     <TextInput
                         style={styles.input}
                         placeholder="Service Name"
@@ -122,9 +189,21 @@ const ServiceManagement = () => {
                         onChangeText={setServiceDuration}
                         keyboardType="numeric"
                     />
-                    <TouchableOpacity style={styles.addButton} onPress={handleAddService}>
-                        <Text style={styles.addButtonText}>{serviceID ? 'Update Service' : 'Add Service'}</Text>
-                    </TouchableOpacity>
+                    {isEditing ? (
+                        <TouchableOpacity style={styles.addButton} onPress={() => handleServiceEdit({
+                            serviceID: serviceID,
+                            salonID: salonID,
+                            serviceName: serviceName,
+                            servicePrice: Number(servicePrice),
+                            durationMinutes: Number(durationMinutes)
+                        })}>
+                            <Text style={styles.addButtonText}>Edit Service</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity style={styles.addButton} onPress={handleAddService}>
+                            <Text style={styles.addButtonText}>Add Service</Text>
+                        </TouchableOpacity>
+                    )}
                     {serviceID && (
                         <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
                             <Text style={styles.cancelButtonText}>Cancel Edit</Text>
@@ -136,19 +215,11 @@ const ServiceManagement = () => {
                     data={services}
                     keyExtractor={item => item.serviceID}
                     renderItem={({ item }) => (
-                        <View style={styles.serviceCard}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.serviceName}>{item.serviceName}</Text>
-                                <Text style={styles.serviceDetail}>Price: LKR {item.servicePrice}</Text>
-                                <Text style={styles.serviceDetail}>Duration: {item.durationMinutes} min</Text>
-                            </View>
-                            <TouchableOpacity onPress={() => handleEdit(item.serviceID)} style={styles.editBtn}>
-                                <Text style={{ color: '#3586DB', fontWeight: 'bold' }}>Edit</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleDelete(item.serviceID)} style={styles.deleteBtn}>
-                                <Text style={{ color: '#e74c3c', fontWeight: 'bold' }}>Delete</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <ServiceCard
+                            service={item}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
                     )}
                     ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No services added yet.</Text>}
                 />
