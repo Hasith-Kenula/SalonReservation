@@ -1,4 +1,5 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
@@ -16,7 +17,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
       switch (_role) {
 
         case 'Customer':
-          setVisibleTabs(['home', 'setting', 'profile'])
+          setVisibleTabs(['home', 'profile', 'reservation'])
           break;
         case 'Salon':
           setVisibleTabs(['salonHome', 'setting', 'profile', 'detail']);
@@ -36,15 +37,17 @@ const TabBar = ({ state, descriptors, navigation }) => {
   function getIcon(name, focused) {
     switch (name) {
       case 'home':
-        return <AntDesign name='home' size={20} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
       case 'salonHome':
-        return <AntDesign name='home' size={20} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
       case 'setting':
-        return <AntDesign name='setting' size={20} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='setting' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
       case 'profile':
-        return <AntDesign name='user' size={20} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='user' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+      case 'reservation':
+        return <MaterialCommunityIcons name="calendar-clock-outline" size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />// return <MaterialIcons name="schedule" size={20} color={focused ? colors.primary : colors.secondary} />
       default:
-        return <MaterialIcons name="error" size={20} color={focused ? colors.primary : colors.secondary} />;
+        return <MaterialIcons name="error" size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
     }
   }
   return (
@@ -94,7 +97,9 @@ const TabBar = ({ state, descriptors, navigation }) => {
             style={Styles.Item}
           >
             {getIcon(route.name, isFocused)}
-            <Text style={{ color: isFocused ? colors.primary : colors.secondary }}>
+            <Text style={{ color: isFocused ? colors.primary : colors.secondary, fontSize: isFocused ? 15 : 14, }}
+              numberOfLines={1}>
+
               {label}
             </Text>
           </TouchableOpacity>

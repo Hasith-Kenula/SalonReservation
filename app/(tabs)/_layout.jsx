@@ -20,6 +20,13 @@ const _layout = () => {
                 }}
             />
             <Tabs.Screen
+                name="reservation"
+                options={{
+                    title: 'My Reservations',
+                    headerShown: false,
+                }}
+            />
+            <Tabs.Screen
                 name="profile"
                 options={{
                     title: 'Profile',
