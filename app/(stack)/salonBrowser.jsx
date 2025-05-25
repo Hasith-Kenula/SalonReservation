@@ -1,5 +1,4 @@
-import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput } from 'react-native'
-import SalonCard from '../../components/SalonCard'
+import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput } from 'react-native'
 
 const SalonBrowser = () => {
   const salons = [
@@ -141,7 +140,7 @@ const SalonBrowser = () => {
             marginBottom: 10,
           }}
         />
-        <FlatList
+        {/* <FlatList
           style={{ marginBottom: 100 }}
           data={salons}
           keyExtractor={(item) => item.id.toString()}
@@ -156,7 +155,7 @@ const SalonBrowser = () => {
               services={item.services.map(s => ({ service: s.service, price: String(s.price) }))}
             />
           )}
-        />
+        /> */}
       </ScrollView>
     </SafeAreaView>
   )

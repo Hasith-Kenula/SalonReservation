@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, Keyboard, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Employee = {
     empID: string;
@@ -9,7 +10,7 @@ type Employee = {
     password: string;
     phone: string;
 };
-
+const THEME_COLOR = '#3586DB';
 const StaffManagement = () => {
     const [employeeList, setEmployeeList] = useState<Employee[]>([]);
     const [fullName, setfullName] = useState('');
@@ -18,6 +19,7 @@ const StaffManagement = () => {
     const [empID, setempID] = useState('');
     const [salonID, setSalonID] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Fetch staff from API
     useEffect(() => {
@@ -33,8 +35,10 @@ const StaffManagement = () => {
                 const result = await response.json();
                 if (result.success) {
                     setEmployeeList(result.data);
+                    setLoading(false);
                 } else {
                     alert(result.message);
+                    setLoading(false);
                 }
             }
         }
@@ -187,26 +191,33 @@ const StaffManagement = () => {
                     )}
                 </View>
                 <Text style={styles.sectionTitle}>Staff Members</Text>
-                <FlatList
-                    data={employeeList}
-                    keyExtractor={item => item.empID}
-                    renderItem={({ item }) => (
-                        <View style={styles.staffCard}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.staffName}>{item.fullName}</Text>
-                                <Text style={styles.staffDetail}>password: {item.password}</Text>
-                                <Text style={styles.staffDetail}>Phone: {item.phone}</Text>
+                {loading && (
+                    <View style={styles.center}>
+                        <ActivityIndicator size="large" color={THEME_COLOR} />
+                    </View>
+                )}
+                {!loading && (
+                    <FlatList
+                        data={employeeList}
+                        keyExtractor={item => item.empID}
+                        renderItem={({ item }) => (
+                            <View style={styles.staffCard}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.staffName}>{item.fullName}</Text>
+                                    <Text style={styles.staffDetail}>password: {item.password}</Text>
+                                    <Text style={styles.staffDetail}>Phone: {item.phone}</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
+                                    <Text style={{ color: '#3586DB', fontWeight: 'bold' }}>Edit</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => handleDelete(item.empID)} style={styles.deleteBtn}>
+                                    <Text style={{ color: '#e74c3c', fontWeight: 'bold' }}>Delete</Text>
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
-                                <Text style={{ color: '#3586DB', fontWeight: 'bold' }}>Edit</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleDelete(item.empID)} style={styles.deleteBtn}>
-                                <Text style={{ color: '#e74c3c', fontWeight: 'bold' }}>Delete</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                    ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No staff members added yet.</Text>}
-                />
+                        )}
+                        ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No staff members added yet.</Text>}
+                    />
+                )}
             </View>
         </SafeAreaView>
     );
@@ -215,6 +226,7 @@ const StaffManagement = () => {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f9f9f9', padding: 15 },
     title: {
+        color: THEME_COLOR,
         alignSelf: 'flex-start',
         marginLeft: 10,
         fontSize: 30,
@@ -246,6 +258,7 @@ const styles = StyleSheet.create({
     staffDetail: { fontSize: 14, color: '#555' },
     editBtn: { marginLeft: 10, padding: 6 },
     deleteBtn: { marginLeft: 6, padding: 6 },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
 export default StaffManagement;

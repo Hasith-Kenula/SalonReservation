@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const TabBar = ({ state, descriptors, navigation }) => {
+const TabBar = ({ state, descriptors, navigation }: any) => {
 
 
   const [visibleTabs, setVisibleTabs] = useState(['']);
@@ -34,7 +34,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
     primary: '#2B6EC5',
     secondary: 'gray',
   }
-  function getIcon(name, focused) {
+  function getIcon(name: any, focused: any) {
     switch (name) {
       case 'home':
         return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
@@ -52,7 +52,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
   }
   return (
     <View style={Styles.container}>
-      {state.routes.map((route, index) => {
+      {state.routes.map((route: any, index: any) => {
 
         const { options } = descriptors[route.key];
         const label =

@@ -1,7 +1,8 @@
 import ServiceCard from '@/components/ServiceCard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, Keyboard, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // const initialServices = [
 //     { id: '1', name: 'Haircut', price: '2000', duration: '30' },
@@ -16,6 +17,8 @@ type Service = {
     durationMinutes: number;
 };
 
+const THEME_COLOR = '#3586DB';
+
 const ServiceManagement = () => {
     const [services, setServices] = useState<Service[]>([]);
     const [serviceName, setServiceName] = useState('');
@@ -24,8 +27,9 @@ const ServiceManagement = () => {
     const [serviceID, setServiceID] = useState('');
     const [salonID, setSalonID] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    //fetch data from API
+    //fetch initial service data from API
     useEffect(() => {
         const fetchData = async () => {
             const salon = await AsyncStorage.getItem('user');
@@ -43,9 +47,11 @@ const ServiceManagement = () => {
 
                 if (result.success) {
                     setServices(result.data);
+                    setLoading(false);
                 } else {
+                    Alert.alert('Error', result.message);
                     console.log(result.message);
-                    alert(result.message);
+                    setLoading(false);
                 }
             }
 
@@ -155,6 +161,13 @@ const ServiceManagement = () => {
             }
         ]);
     }
+    // if (loading) {
+    //     return (
+    //         <View style={styles.center}>
+    //             <ActivityIndicator size="large" color={THEME_COLOR} />
+    //         </View>
+    //     );
+    // }
     return (
         <SafeAreaView style={{ height: '100%' }}>
             <View style={styles.heading}>
@@ -216,18 +229,25 @@ const ServiceManagement = () => {
                     )}
                 </View>
                 <Text style={styles.sectionTitle}>Services</Text>
-                <FlatList
-                    data={services}
-                    keyExtractor={item => item.serviceID}
-                    renderItem={({ item }) => (
-                        <ServiceCard
-                            service={item}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    )}
-                    ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No services added yet.</Text>}
-                />
+                {loading && (
+                    <View style={styles.center}>
+                        <ActivityIndicator size="large" color={THEME_COLOR} />
+                    </View>
+                )}
+                {!loading && (
+                    <FlatList
+                        data={services}
+                        keyExtractor={item => item.serviceID}
+                        renderItem={({ item }) => (
+                            <ServiceCard
+                                service={item}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                            />
+                        )}
+                        ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No services added yet.</Text>}
+                    />
+                )}
             </View>
         </SafeAreaView>
 
@@ -270,6 +290,7 @@ const styles = StyleSheet.create({
     serviceDetail: { fontSize: 14, color: '#555' },
     editBtn: { marginLeft: 10, padding: 6 },
     deleteBtn: { marginLeft: 6, padding: 6 },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
 export default ServiceManagement;

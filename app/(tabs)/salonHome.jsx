@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mockStats = {
     todayAppointments: 4,
@@ -20,13 +21,15 @@ const SalonHome = () => {
     const [stats, setStats] = useState(mockStats);
     const [reservations, setReservations] = useState(mockReservations);
 
+
     // You can fetch real stats and reservations here
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="dark-content" />
             {/* Header */}
-            <View style={styles.heading}>
-                <Text style={styles.header}>Salon Dashboard</Text>
+            <View style={styles.headings}>
+                <Text style={styles.title}>Dashboard</Text>
             </View>
             {/* Stats */}
             <View style={styles.statsRow}>
@@ -116,6 +119,21 @@ const styles = StyleSheet.create({
     resTime: { fontWeight: 'bold', color: '#3586DB' },
     resCustomer: { fontSize: 16, color: '#222' },
     resService: { fontSize: 14, color: '#888' },
+    title: {
+        alignSelf: 'flex-start',
+        marginLeft: 10,
+        fontSize: 30,
+        paddingBottom: 10,
+        //color: '#3586DB',
+        fontWeight: 'bold',
+    },
+    headings: {
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottomColor: 'rgba(131, 131, 131, 0.51)',
+        borderBottomWidth: 1,
+    },
 });
 
 export default SalonHome;

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../components/FocusableTextInput';
 
@@ -58,6 +58,7 @@ function Login() {
 
     return (
         <SafeAreaView style={Style.mainContainer}>
+            <StatusBar barStyle='dark-content' />
             <View style={[Style.title]}>
                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#3586DB' }}>Welcome to {AppName}</Text>
             </View>

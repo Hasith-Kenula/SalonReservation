@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SalonDetail = () => {
     const { name, services, distance, rate, price, ownerName, priceRange, salonID } = useLocalSearchParams();
@@ -92,6 +93,7 @@ const SalonDetail = () => {
 
     return (
         <SafeAreaView style={Style.mainContainer}>
+            <StatusBar backgroundColor="#f0f0f0" barStyle="dark-content" />
             <View style={Style.headings}>
                 <Text style={Style.title}>Salon Details</Text>
             </View>

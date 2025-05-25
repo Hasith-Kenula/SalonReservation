@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../components/FocusableTextInput';
 import SalonCard from '../../components/SalonCard';
 
@@ -79,7 +80,7 @@ const Home = () => {
       <View style={Style.headings}>
         <Text style={Style.title}>Salons</Text>
       </View>
-      <View style={{ paddingTop: 10, paddingHorizontal: 15 }}>
+      <View style={{ paddingTop: 10, paddingHorizontal: 15, flex: 1 }}>
         <FocusableTextInput
           placeholder="Search for salons"
           placeholderTextColor="gray"
