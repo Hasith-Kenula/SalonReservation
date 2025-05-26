@@ -2,6 +2,8 @@ import { Tabs } from 'expo-router';
 import TabBar from '../../components/TabBar';
 
 const _layout = () => {
+
+
     return (
         <Tabs
             tabBar={props => <TabBar {...props} />}
@@ -16,6 +18,13 @@ const _layout = () => {
                 name="salonHome"
                 options={{
                     title: 'Home',
+                    headerShown: false,
+                }}
+            />
+            <Tabs.Screen
+                name="employeeHome"
+                options={{
+                    title: 'EmpHome',
                     headerShown: false,
                 }}
             />

@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Linking, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { io } from 'socket.io-client';
 
 type Reservations = {
   resID: string;
@@ -26,17 +27,20 @@ const ReservationScreen = () => {
   console.log("Reservation Screen");
   const [reservations, setReservations] = useState<Reservations[]>([]);
   const [loading, setLoading] = useState(true);
+  const [customerID, setCustomerID] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCustomerID = async () => {
+      const userJson = await AsyncStorage.getItem('user');
+      const user = userJson ? JSON.parse(userJson) : null;
+      setCustomerID(user?.customerID || null);
+    };
+    getCustomerID();
+  }, []);
 
   const fetchReservations = async () => {
     setLoading(true);
-    const userJson = await AsyncStorage.getItem('user');
-    const user = userJson ? JSON.parse(userJson) : null;
-    const customerID = user?.customerID;
-    if (!customerID) {
-      setReservations([]);
-      setLoading(false);
-      return;
-    }
+
     try {
       const res = await fetch(`http://192.168.1.2:3000/reservations/customer/${customerID}`);
       const data = await res.json();
@@ -48,8 +52,28 @@ const ReservationScreen = () => {
   };
 
   useEffect(() => {
+    if (!customerID) return;
+
     fetchReservations();
-  }, []);
+    console.log("Connecting to socket with customerID:", customerID);
+    const socket = io('http://192.168.1.2:3000', {
+      transports: ['websocket'],
+      query: { customerID },
+    });
+    socket.on('reservation:statusUpdate', (updatedReservation: Reservations) => {
+      console.log('Reservation status updated:', updatedReservation);
+      setReservations(prev =>
+        prev.map(res =>
+          res.resID === updatedReservation.resID
+            ? { ...res, ...updatedReservation }
+            : res
+        )
+      );
+    });
+    return () => {
+      socket.disconnect();
+    }
+  }, [customerID]);
 
   const handleDelete = (resID: string) => {
     Alert.alert(

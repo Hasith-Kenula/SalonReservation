@@ -17,7 +17,7 @@ export default function Splash() {
                 } else if (role == 'Salon') {
                     router.replace('/salonHome'); // Go to salon (index)
                 }
-
+                role == 'Employee' ? router.replace('/employeeHome') : role == 'Customer' ? router.replace('/home') : router.replace('/salonHome'); // Go to employee reservation
             } else {
                 router.replace('/login'); // Go to login
             }

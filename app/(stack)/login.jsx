@@ -27,8 +27,10 @@ function Login() {
                 if (role == 'Customer') {
                     apiUrl = 'http://192.168.1.2:3000/customers/login';
 
-                } else {
+                } else if (role == 'Salon') {
                     apiUrl = 'http://192.168.1.2:3000/salons/login'
+                } else {
+                    apiUrl = 'http://192.168.1.2:3000/employees/login'
                 }
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -40,10 +42,18 @@ function Login() {
                 console.log(data);
                 if (data.success) {
                     await AsyncStorage.setItem('isLoggedIn', 'true');
-                    await AsyncStorage.setItem('user', JSON.stringify(data.Data));
+                    await AsyncStorage.setItem('user', JSON.stringify(data.data));
                     await AsyncStorage.setItem('role', role);
 
-                    role == 'Customer' ? router.replace('/home') : router.replace('/salonHome');;
+                    //role == 'Customer' ? router.replace('/home') : role == 'Salon' ? router.replace('/salonHome') : router.replace('/employeeHome');
+                    if (role == 'Customer') {
+                        router.replace('/home'); // Go to home (index)
+                    } else if (role == 'Salon') {
+                        router.replace('/salonHome'); // Go to salon home
+                    }
+                    else if (role == 'Employee') {
+                        router.replace('/employeeHome'); // Go to employee home
+                    }
 
                 } else {
                     alert(data.message);
@@ -71,6 +81,9 @@ function Login() {
                 </TouchableOpacity>
                 <TouchableOpacity style={[Style.button, { width: '45%' }]} onPress={() => { setRole('Salon') }}>
                     <Text style={Style.btnText}>Salon Owner</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[Style.button, { width: '45%' }]} onPress={() => { setRole('Employee') }}>
+                    <Text style={Style.btnText}>Employee</Text>
                 </TouchableOpacity>
             </View>
             <View style={Style.formContainer}>

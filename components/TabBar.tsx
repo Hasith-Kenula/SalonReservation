@@ -15,12 +15,14 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
       const _role = await AsyncStorage.getItem('role');
 
       switch (_role) {
-
         case 'Customer':
           setVisibleTabs(['home', 'profile', 'reservation'])
           break;
         case 'Salon':
           setVisibleTabs(['salonHome', 'setting', 'profile', 'detail']);
+          break;
+        case 'Employee':
+          setVisibleTabs(['employeeHome', 'setting', 'profile', 'detail']);
           break;
         default:
           setVisibleTabs(['home', 'setting', 'profile']);
@@ -29,7 +31,7 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
     }
     setTabs();
   }, []);
-  console.log(state.routes);
+  console.log('Visible Tabs:', visibleTabs);
   const colors = {
     primary: '#2B6EC5',
     secondary: 'gray',
@@ -39,6 +41,8 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
       case 'home':
         return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
       case 'salonHome':
+        return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+      case 'employeeHome':
         return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
       case 'setting':
         return <AntDesign name='setting' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
