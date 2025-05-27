@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { io } from 'socket.io-client';
+import { useSocket } from '../../socket/socketProvider';
 
 const THEME_COLOR = '#3586DB';
+
 
 type Reservation = {
     resID: string;
@@ -18,6 +19,7 @@ type Reservation = {
     reservedServices: string;
     totalPrice: string;
 };
+
 const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toISOString().slice(0, 10);
@@ -26,13 +28,19 @@ const EmployeeHome = () => {
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [loading, setLoading] = useState(true);
     const [salonID, setSalonID] = useState<string | null>(null);
+    const [employeeID, setEmployeeID] = useState<string | null>(null);
+    const [employeeName, setEmployeeName] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
+    const [customerConfirmation, setCustomerConfirmation] = useState<boolean>(false);
+    const socket = useSocket();
 
     useEffect(() => {
         const fetchSalonID = async () => {
             const userJson = await AsyncStorage.getItem('user');
             const user = userJson ? JSON.parse(userJson) : null;
             setSalonID(user?.salonID || null);
+            setEmployeeID(user?.employeeID || null);
+            setEmployeeName(user?.fullName || null);
         };
         fetchSalonID();
     }, []);
@@ -47,30 +55,33 @@ const EmployeeHome = () => {
             } else {
                 Alert.alert('Error', result.message);
                 setReservations([]);
+
             }
         } catch {
             setReservations([]);
+            setLoading(false);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     useEffect(() => {
         if (!salonID) return;
-
         // 1. Fetch initial pending reservations
-
-
         fetchReservations();
-
         // 2. Connect to WebSocket for real-time updates
-        const socket = io('http://192.168.1.2:3000', {
-            transports: ['websocket'],
-            query: { salonID },
-        });
-
-        // Listen for new reservations and status updates
+        // const socket = io('http://192.168.1.2:3000', {
+        //     transports: ['websocket'],
+        //     query: { salonID },
+        // });
+    }, [salonID]);
+    useEffect(() => {
+        if (!socket) {
+            console.warn('Employee: Socket not initialized');
+            return;
+        }
         socket.on('reservation:new', (reservation: Reservation) => {
-            console.log('New reservation:', reservation);
+            //alert('new reservation receving');
             if (reservation.resStatus === 'pending' && reservation.salonID === salonID) {
                 setReservations(prev => {
                     const updated = [reservation, ...prev];
@@ -84,50 +95,137 @@ const EmployeeHome = () => {
                 });
             }
         });
-
-        socket.on('reservation:statusUpdate', (updated: Reservation) => {
+        // Listen for reservation status updates
+        socket.on('reservation:statusUpdate', (updatedreservation: Reservation) => {
+            //alert('status updating');
             setReservations(prev =>
-                prev.map(r => (r.resID === updated.resID ? updated : r))
+                prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r))
                     .filter(r => r.resStatus === 'pending') // Only show pending
             );
-        });
+        }
+        );
+        const onConfirmed = async (data: { resID: string, customerID: string, employeeID: string, employeeName: string, salonID: string, resStatus: string, confirmed: boolean }) => {
 
-        // Clean up on unmount
-        return () => {
-            socket.disconnect();
-        };
-    }, [salonID]);
 
-    const handleProcessComplete = async (resID: string, customerID: string, newStatus: string) => {
-        try {
-            const res = await fetch(`http://192.168.1.2:3000/reservations/${resID}/status`, {
+            const res = await fetch(`http://192.168.1.2:3000/reservations/${data.resID}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ resStatus: newStatus, salonID: salonID }) // Include customerID in the request,
+                body: JSON.stringify({ resStatus: data.resStatus, salonID: data.salonID, employeeID: data.employeeID, employeeName: data.employeeName, customerID: data.customerID }) // Include customerID in the request,
             });
-            const data = await res.json();
-            if (!data.success) {
-                Alert.alert('Error', data.message);
+            const result = await res.json();
+            if (!result.success) {
+                Alert.alert('Error', result.message);
                 return;
             }
+
+
+            console.log('Csutomer confirm the reques ' + data.confirmed);
+            Alert.alert('Success', 'Customer confirmed the request ' + data.confirmed);
+
+        }
+        const onRejected = async (data: { resID: string, employeeID: string, confirmed: boolean }) => {
+            console.log('Customer reject the reques' + data.confirmed);
+            Alert.alert('Notice', 'Customer rejected the request ' + data.confirmed);
+        }
+        socket.on('reservation:confirmed', onConfirmed);
+        socket.on('reservation:rejected', onRejected);
+
+        return () => {
+            // Clean up the socket connection on unmount
+            socket.off('reservation:new');
+            socket.off('reservation:statusUpdate');
+            socket.off('reservation:confirmed', onConfirmed);
+            socket.off('reservation:rejected', onRejected);
+        }
+
+        // // Listen for new reservations and status updates
+        // socket.on('reservation:new', (reservation: Reservation) => {
+        //     console.log('New reservation:', reservation);
+        // if (reservation.resStatus === 'pending' && reservation.salonID === salonID) {
+        //     setReservations(prev => {
+        //         const updated = [reservation, ...prev];
+        //         updated.sort((a, b) => {
+        //             // Combine date and time for each reservation
+        //             const dateA = new Date(`${(formatDate(a.resDate))}T${a.resTime}`);
+        //             const dateB = new Date(`${formatDate(b.resDate)}T${b.resTime}`);
+        //             return dateA.getTime() - dateB.getTime(); // Ascending: earliest first
+        //         });
+        //         return updated;
+        //     });
+        // }
+        // });
+        // // Listen for reservation status updates
+
+        // socket.on('reservation:statusUpdate', (updated: Reservation) => {
+        // setReservations(prev =>
+        //     prev.map(r => (r.resID === updated.resID ? updated : r))
+        //         .filter(r => r.resStatus === 'pending') // Only show pending
+        // );
+        // });
+
+        // // Clean up on unmount
+        // return () => {
+        //     socket.disconnect();
+        // };
+    }, [socket]);
+
+
+    const handleProcessComplete = async (resID: string, newStatus: string, customerID: string) => {
+        try {
+            console.log(`CustomerID: ${customerID}`);
+            console.log(`employeeID: ${employeeID}`);
+            console.log(`employeeName: ${employeeName}`);
+            console.log(`resID: ${resID}`);
+            console.log(`newStatus: ${newStatus}`);
+            console.log(`salonID: ${salonID} \n \n`);
+            // if (!customerConfirmation) {
+            //     Alert.alert("Oops!", "Customer reject your request!.");
+            //     return;
+            // }
+            const response = await fetch('http://192.168.1.2:3000/socket/getCustomerConfirmation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ resID: resID, customerID: customerID, employeeID: employeeID, employeeName: employeeName, salonID: salonID, resStatus: newStatus })
+            });
+            const result = await response.json();
+            if (result.success) {
+                Alert.alert("Success!", "Request send to customer");
+            } else {
+                Alert.alert("Error!", "Failed to send request " + result.message);
+            }
+            // const res = await fetch(`http://192.168.1.2:3000/reservations/${resID}/status`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ resStatus: newStatus, salonID: salonID, employeeID: employeeID, employeeName: employeeName, customerID: customerID }) // Include customerID in the request,
+            // });
+            // const data = await res.json();
+            // if (!data.success) {
+            //     Alert.alert('Error', data.message);
+            //     return;
+            // }
 
             // No need to update state here; socket will handle it
         } catch {
             Alert.alert('Error', 'Failed to update reservation status.');
+        } finally {
+            setCustomerConfirmation(false);
         }
     };
 
-    if (loading) {
-        return (
-            <View style={styles.center}>
-                <ActivityIndicator size="large" color={THEME_COLOR} />
-            </View>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <View style={styles.center}>
+    //             <ActivityIndicator size="large" color={THEME_COLOR} />
+    //         </View>
+    //     );
+    // }
 
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Pending Reservations</Text>
+
             <FlatList
                 data={reservations}
                 keyExtractor={item => item.resID}
@@ -141,12 +239,12 @@ const EmployeeHome = () => {
                         <Text style={styles.detail}>Services: <Text style={styles.bold}>{item.reservedServices}</Text></Text>
                         <Text style={styles.detail}>Total: <Text style={styles.price}>LKR {item.totalPrice}</Text></Text>
                         {item.resStatus === 'pending' && (
-                            <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, item.customerID, 'processing')}>
+                            <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'processing', item.customerID)}>
                                 <Text style={styles.processBtnText}>Begin Process</Text>
                             </TouchableOpacity>
                         )}
                         {item.resStatus === 'processing' && (
-                            <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, item.customerID, 'completed')}>
+                            <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'completed', item.customerID)}>
                                 <Text style={styles.processBtnText}>Mark as Complete</Text>
                             </TouchableOpacity>
                         )}

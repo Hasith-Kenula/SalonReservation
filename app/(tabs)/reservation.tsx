@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Linking, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { io } from 'socket.io-client';
+import { useSocket } from '../../socket/socketProvider';
 
 type Reservations = {
   resID: string;
@@ -28,6 +28,7 @@ const ReservationScreen = () => {
   const [reservations, setReservations] = useState<Reservations[]>([]);
   const [loading, setLoading] = useState(true);
   const [customerID, setCustomerID] = useState<string | null>(null);
+  const socket = useSocket();
 
   useEffect(() => {
     const getCustomerID = async () => {
@@ -55,12 +56,84 @@ const ReservationScreen = () => {
     if (!customerID) return;
 
     fetchReservations();
+
+
+    // console.log("Connecting to socket with customerID:", customerID);
+    // const socket = io('http://192.168.1.2:3000', {
+    //   transports: ['websocket'],
+    //   query: { customerID },
+    // });
+    // socket.on('reservation:statusUpdate', (updatedReservation: Reservations) => {
+    //   console.log('Reservation status updated:', updatedReservation);
+    //   setReservations(prev =>
+    //     prev.map(res =>
+    //       res.resID === updatedReservation.resID
+    //         ? { ...res, ...updatedReservation }
+    //         : res
+    //     )
+    //   );
+    // });
+    // return () => {
+    //   socket.disconnect();
+    // }
+  }, [customerID]);
+  useEffect(() => {
+    if (!socket) {
+      console.warn('Customer: Socket not initialized');
+      return;
+    };
+
+    const handleConfirmRequest = (data: {
+      resID: string;
+      customerID: string;
+      employeeID: string;
+      salonID: string;
+      employeeName: string;
+      resStatus: string;
+      message: string;
+    }) => {
+      Alert.alert('Reservation Confirmation', data.message, [
+        {
+          text: 'Reject',
+          style: 'cancel',
+          onPress: () => {
+            socket.emit('reservation:confirmResponse', {
+              resID: data.resID,
+              customerID: data.customerID,
+              employeeID: data.employeeID,
+              salonID: data.salonID,
+              employeeName: data.employeeName,
+              resStatus: data.resStatus,
+              confirmed: false,
+            });
+            console.log('Reject')
+          }
+        },
+        {
+          text: 'Confirm',
+          style: 'default',
+          onPress: () => {
+            socket.emit('reservation:confirmResponse', {
+              resID: data.resID,
+              customerID: data.customerID,
+              employeeID: data.employeeID,
+              salonID: data.salonID,
+              employeeName: data.employeeName,
+              resStatus: data.resStatus,
+              confirmed: true,
+            });
+            console.log('Confirm')
+          }
+        }
+
+      ]);
+    }
+
+
     console.log("Connecting to socket with customerID:", customerID);
-    const socket = io('http://192.168.1.2:3000', {
-      transports: ['websocket'],
-      query: { customerID },
-    });
+
     socket.on('reservation:statusUpdate', (updatedReservation: Reservations) => {
+      //alert('status updating');
       console.log('Reservation status updated:', updatedReservation);
       setReservations(prev =>
         prev.map(res =>
@@ -70,10 +143,14 @@ const ReservationScreen = () => {
         )
       );
     });
+    socket.on('reservation:confirmRequest', handleConfirmRequest);
+
     return () => {
-      socket.disconnect();
+      socket.off('reservation:statusUpdate');
+      socket.off('reservation:comfirmRequest');
+
     }
-  }, [customerID]);
+  });
 
   const handleDelete = (resID: string) => {
     Alert.alert(

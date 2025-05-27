@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, FlatList, Keyboard, StyleSheet, Text, TextInp
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Employee = {
-    empID: string;
+    employeeID: string;
 
     fullName: string;
     password: string;
@@ -16,7 +16,7 @@ const StaffManagement = () => {
     const [fullName, setfullName] = useState('');
     const [password, setpassword] = useState('');
     const [phone, setPhone] = useState('');
-    const [empID, setempID] = useState('');
+    const [employeeID, setempID] = useState('');
     const [salonID, setSalonID] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -86,7 +86,7 @@ const StaffManagement = () => {
                     });
                     const result = await response.json();
                     if (result.success) {
-                        setEmployeeList(employeeList.filter(s => s.empID !== id));
+                        setEmployeeList(employeeList.filter(s => s.employeeID !== id));
                         alert(result.message);
                     } else {
                         alert(result.message);
@@ -98,7 +98,7 @@ const StaffManagement = () => {
 
     const handleEdit = (item: Employee) => {
         setIsEditing(true);
-        setempID(item.empID);
+        setempID(item.employeeID);
         setfullName(item.fullName);
         setpassword(item.password);
         setPhone(item.phone);
@@ -110,7 +110,7 @@ const StaffManagement = () => {
             { text: 'Cancel', style: 'cancel' },
             {
                 text: 'Edit', style: 'destructive', onPress: async () => {
-                    const response = await fetch(`http://192.168.1.2:3000/staff/${item.empID}`, {
+                    const response = await fetch(`http://192.168.1.2:3000/staff/${item.employeeID}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -121,7 +121,7 @@ const StaffManagement = () => {
                     });
                     const result = await response.json();
                     if (result.success) {
-                        setEmployeeList(employeeList.map(s => s.empID === item.empID ? { ...s, fullName: item.fullName, password: item.password, phone: item.phone } : s));
+                        setEmployeeList(employeeList.map(s => s.employeeID === item.employeeID ? { ...s, fullName: item.fullName, password: item.password, phone: item.phone } : s));
                         resetForm();
                     } else {
                         alert(result.message);
@@ -142,7 +142,7 @@ const StaffManagement = () => {
                         <TextInput
                             style={[styles.input, { color: 'gray' }]}
                             placeholderTextColor='gray'
-                            value={`StaffID: ${empID}`}
+                            value={`StaffID: ${employeeID}`}
                             editable={false}
                         />
                     )}
@@ -172,7 +172,7 @@ const StaffManagement = () => {
                     />
                     {isEditing ? (
                         <TouchableOpacity style={styles.addButton} onPress={() => handleStaffEdit({
-                            empID: empID,
+                            employeeID: employeeID,
                             fullName: fullName,
                             password: password,
                             phone: phone
@@ -184,7 +184,7 @@ const StaffManagement = () => {
                             <Text style={styles.addButtonText}>Add Employee</Text>
                         </TouchableOpacity>
                     )}
-                    {empID && (
+                    {employeeID && (
                         <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
                             <Text style={styles.cancelButtonText}>Cancel Edit</Text>
                         </TouchableOpacity>
@@ -199,7 +199,7 @@ const StaffManagement = () => {
                 {!loading && (
                     <FlatList
                         data={employeeList}
-                        keyExtractor={item => item.empID}
+                        keyExtractor={item => item.employeeID}
                         renderItem={({ item }) => (
                             <View style={styles.staffCard}>
                                 <View style={{ flex: 1 }}>
@@ -210,7 +210,7 @@ const StaffManagement = () => {
                                 <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
                                     <Text style={{ color: '#3586DB', fontWeight: 'bold' }}>Edit</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => handleDelete(item.empID)} style={styles.deleteBtn}>
+                                <TouchableOpacity onPress={() => handleDelete(item.employeeID)} style={styles.deleteBtn}>
                                     <Text style={{ color: '#e74c3c', fontWeight: 'bold' }}>Delete</Text>
                                 </TouchableOpacity>
                             </View>

@@ -46,14 +46,15 @@ function Login() {
                     await AsyncStorage.setItem('role', role);
 
                     //role == 'Customer' ? router.replace('/home') : role == 'Salon' ? router.replace('/salonHome') : router.replace('/employeeHome');
-                    if (role == 'Customer') {
-                        router.replace('/home'); // Go to home (index)
-                    } else if (role == 'Salon') {
-                        router.replace('/salonHome'); // Go to salon home
-                    }
-                    else if (role == 'Employee') {
-                        router.replace('/employeeHome'); // Go to employee home
-                    }
+                    // if (role == 'Customer') {
+                    //     router.replace('/home'); // Go to home (index)
+                    // } else if (role == 'Salon') {
+                    //     router.replace('/salonHome'); // Go to salon home
+                    // }
+                    // else if (role == 'Employee') {
+                    //     router.replace('/employeeHome'); // Go to employee home
+                    // }
+                    router.replace('/')
 
                 } else {
                     alert(data.message);
