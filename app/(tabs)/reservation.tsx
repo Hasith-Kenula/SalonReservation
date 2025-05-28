@@ -28,6 +28,7 @@ const ReservationScreen = () => {
   const [reservations, setReservations] = useState<Reservations[]>([]);
   const [loading, setLoading] = useState(true);
   const [customerID, setCustomerID] = useState<string | null>(null);
+  const [requestExpired, setRequestExpired] = useState(false);
   const socket = useSocket();
 
   useEffect(() => {
@@ -92,6 +93,9 @@ const ReservationScreen = () => {
       resStatus: string;
       message: string;
     }) => {
+      // if (requestExpired) {
+      //   return;
+      // }
       Alert.alert('Reservation Confirmation', data.message, [
         {
           text: 'Reject',
@@ -129,6 +133,10 @@ const ReservationScreen = () => {
       ]);
     }
 
+    const onRequestExpired = () => {
+      setRequestExpired(true);
+      Alert.alert('Request Expired', 'Your request has expired. Please try again.');
+    }
 
     console.log("Connecting to socket with customerID:", customerID);
 
@@ -144,13 +152,15 @@ const ReservationScreen = () => {
       );
     });
     socket.on('reservation:confirmRequest', handleConfirmRequest);
+    socket.on('reservation:requestExpired', onRequestExpired);
 
     return () => {
       socket.off('reservation:statusUpdate');
-      socket.off('reservation:comfirmRequest');
+      socket.off('reservation:confirmRequest', handleConfirmRequest);
+      socket.off('reservation:requestExpired', onRequestExpired);
 
     }
-  });
+  }, [socket, requestExpired]);
 
   const handleDelete = (resID: string) => {
     Alert.alert(

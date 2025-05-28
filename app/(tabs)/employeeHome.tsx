@@ -1,6 +1,7 @@
+import StatusBox from '@/components/StatusBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSocket } from '../../socket/socketProvider';
 
@@ -30,8 +31,10 @@ const EmployeeHome = () => {
     const [salonID, setSalonID] = useState<string | null>(null);
     const [employeeID, setEmployeeID] = useState<string | null>(null);
     const [employeeName, setEmployeeName] = useState<string | null>(null);
-    const [status, setStatus] = useState<string | null>(null);
+    const [statusBox, setStatusBox] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
     const [customerConfirmation, setCustomerConfirmation] = useState<boolean>(false);
+    const [processingResID, setProcessingResID] = useState<string | null>(null);
+    const timeoutRef = useRef<number | null>(null);
     const socket = useSocket();
 
     useEffect(() => {
@@ -105,28 +108,60 @@ const EmployeeHome = () => {
         }
         );
         const onConfirmed = async (data: { resID: string, customerID: string, employeeID: string, employeeName: string, salonID: string, resStatus: string, confirmed: boolean }) => {
+            try {
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;// Reset
+                }
+                const res = await fetch(`http://192.168.1.2:3000/reservations/${data.resID}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resStatus: data.resStatus, salonID: data.salonID, employeeID: data.employeeID, employeeName: data.employeeName, customerID: data.customerID }) // Include customerID in the request,
+                });
+                const result = await res.json();
+                if (!result.success) {
 
+                    setStatusBox({
+                        message: 'Error with updating status',
+                        type: 'error',
+                    });
+                } else {
 
-            const res = await fetch(`http://192.168.1.2:3000/reservations/${data.resID}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ resStatus: data.resStatus, salonID: data.salonID, employeeID: data.employeeID, employeeName: data.employeeName, customerID: data.customerID }) // Include customerID in the request,
-            });
-            const result = await res.json();
-            if (!result.success) {
-                Alert.alert('Error', result.message);
-                return;
+                    setStatusBox({
+                        message: 'Status update successfully',
+                        type: 'success',
+                    });
+                }
+
+            } catch (error) {
+
+            } finally {
+                setProcessingResID(null);
             }
 
 
-            console.log('Csutomer confirm the reques ' + data.confirmed);
-            Alert.alert('Success', 'Customer confirmed the request ' + data.confirmed);
 
         }
         const onRejected = async (data: { resID: string, employeeID: string, confirmed: boolean }) => {
-            console.log('Customer reject the reques' + data.confirmed);
-            Alert.alert('Notice', 'Customer rejected the request ' + data.confirmed);
+            try {
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;// Reset
+                }
+
+                console.log('Customer reject the reques' + data.confirmed);
+                setStatusBox({
+                    message: 'Customer reject the request',
+                    type: 'error',
+                });
+
+            } catch (error) {
+
+            } finally {
+                setProcessingResID(null);
+            }
         }
+
         socket.on('reservation:confirmed', onConfirmed);
         socket.on('reservation:rejected', onRejected);
 
@@ -172,6 +207,7 @@ const EmployeeHome = () => {
 
     const handleProcessComplete = async (resID: string, newStatus: string, customerID: string) => {
         try {
+            setProcessingResID(resID);
             console.log(`CustomerID: ${customerID}`);
             console.log(`employeeID: ${employeeID}`);
             console.log(`employeeName: ${employeeName}`);
@@ -182,19 +218,45 @@ const EmployeeHome = () => {
             //     Alert.alert("Oops!", "Customer reject your request!.");
             //     return;
             // }
-            const response = await fetch('http://192.168.1.2:3000/socket/getCustomerConfirmation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ resID: resID, customerID: customerID, employeeID: employeeID, employeeName: employeeName, salonID: salonID, resStatus: newStatus })
-            });
-            const result = await response.json();
-            if (result.success) {
-                Alert.alert("Success!", "Request send to customer");
-            } else {
-                Alert.alert("Error!", "Failed to send request " + result.message);
+
+            timeoutRef.current = setTimeout(() => {
+                setProcessingResID(null);
+                setStatusBox({ message: 'Customer did not response to your request.', type: 'error' });
+            }, 30000); // 30 seconds
+
+            if (socket) {
+                socket.emit('reservation:sendRequestToCustomer', {
+                    resID: resID,
+                    resStatus: newStatus,
+                    customerID: customerID,
+                    employeeID: employeeID,
+                    employeeName: employeeName,
+                    salonID: salonID
+                });
             }
+
+            // const response = await fetch('http://192.168.1.2:3000/socket/getCustomerConfirmation', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({ resID: resID, customerID: customerID, employeeID: employeeID, employeeName: employeeName, salonID: salonID, resStatus: newStatus })
+            // });
+
+            // const result = await response.json();
+            // if (result.success) {
+            //     setStatusBox({
+            //         message: "Request sent to customer",
+            //         type: "info",
+            //     });
+            // } else {
+            //     setStatusBox({
+            //         message: "Request failed to send to customer",
+            //         type: "error",
+            //     });
+            // }
+
+
             // const res = await fetch(`http://192.168.1.2:3000/reservations/${resID}/status`, {
             //     method: 'PUT',
             //     headers: { 'Content-Type': 'application/json' },
@@ -224,6 +286,9 @@ const EmployeeHome = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            {statusBox && (
+                <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => { setStatusBox(null) }} />
+            )}
             <Text style={styles.title}>Pending Reservations</Text>
 
             <FlatList
@@ -239,9 +304,16 @@ const EmployeeHome = () => {
                         <Text style={styles.detail}>Services: <Text style={styles.bold}>{item.reservedServices}</Text></Text>
                         <Text style={styles.detail}>Total: <Text style={styles.price}>LKR {item.totalPrice}</Text></Text>
                         {item.resStatus === 'pending' && (
-                            <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'processing', item.customerID)}>
-                                <Text style={styles.processBtnText}>Begin Process</Text>
-                            </TouchableOpacity>
+                            processingResID === item.resID ? (
+                                <TouchableOpacity style={[{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }]}>
+                                    <Text style={[styles.processBtnText, { color: THEME_COLOR, marginRight: 10 }]}>Wait for customer's response</Text>
+                                    <ActivityIndicator size="small" color={THEME_COLOR} />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'processing', item.customerID)}>
+                                    <Text style={styles.processBtnText}>Begin Process</Text>
+                                </TouchableOpacity>
+                            )
                         )}
                         {item.resStatus === 'processing' && (
                             <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'completed', item.customerID)}>
