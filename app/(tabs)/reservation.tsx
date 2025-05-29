@@ -1,3 +1,5 @@
+import ConfirmationModal from '@/components/ConfirmationModal';
+import StatusBox from '@/components/StatusBox';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
@@ -9,13 +11,21 @@ type Reservations = {
   resID: string;
   resDate: string;
   resTime: string;
-  resStatus: string;
+  resStatus: 'processing' | 'completed' | 'cancelled' | 'pending';
   salonName: string;
   salonPhone: string;
   reservedServices: string;
   totalPrice: string;
+  message: string,
 };
 
+const STATUS_COLORS = {
+  pending: '#FFC107',
+  processing: '#2B6EC5',
+  completed: '#27ae60',
+  cancelled: '#e74c3c',
+
+};
 const THEME_COLOR = '#3586DB';
 const PhoneIcon = () => {
   return (
@@ -29,8 +39,39 @@ const ReservationScreen = () => {
   const [loading, setLoading] = useState(true);
   const [customerID, setCustomerID] = useState<string | null>(null);
   const [requestExpired, setRequestExpired] = useState(false);
+
+  const [statusBox, setStatusBox] = useState<{ message: string, type: 'warning' | 'success' | 'error' | 'info' } | null>(null);
+
+  const [modelVisibility, setModelVisibility] = useState(false);
+  const [modelMessage, setModelMessage] = useState("");
+  const [confirmationData, setConfirmationData] = useState<{ resID: string, customerID: string, employeeID: string, employeeName: string, salonID: string, resStatus: string, message: string } | null>(null);
+
   const socket = useSocket();
 
+  const openConfirmationModel = (data: typeof confirmationData) => {
+    setConfirmationData(data);
+    setModelMessage(data?.message || '');
+    setModelVisibility(true);
+  }
+  const onConfirm = () => {
+    if (confirmationData && socket) {
+      socket.emit('reservation:confirmResponse', {
+        ...confirmationData,
+        confirmed: true,
+      });
+    }
+    setModelVisibility(false);
+  }
+  //message reject handler
+  const onReject = () => {
+    if (confirmationData && socket) {
+      socket.emit('reservation:confirmResponse', {
+        ...confirmationData,
+        confirmed: false,
+      });
+    }
+    setModelVisibility(false);
+  }
   useEffect(() => {
     const getCustomerID = async () => {
       const userJson = await AsyncStorage.getItem('user');
@@ -96,46 +137,55 @@ const ReservationScreen = () => {
       // if (requestExpired) {
       //   return;
       // }
-      Alert.alert('Reservation Confirmation', data.message, [
-        {
-          text: 'Reject',
-          style: 'cancel',
-          onPress: () => {
-            socket.emit('reservation:confirmResponse', {
-              resID: data.resID,
-              customerID: data.customerID,
-              employeeID: data.employeeID,
-              salonID: data.salonID,
-              employeeName: data.employeeName,
-              resStatus: data.resStatus,
-              confirmed: false,
-            });
-            console.log('Reject')
-          }
-        },
-        {
-          text: 'Confirm',
-          style: 'default',
-          onPress: () => {
-            socket.emit('reservation:confirmResponse', {
-              resID: data.resID,
-              customerID: data.customerID,
-              employeeID: data.employeeID,
-              salonID: data.salonID,
-              employeeName: data.employeeName,
-              resStatus: data.resStatus,
-              confirmed: true,
-            });
-            console.log('Confirm')
-          }
-        }
+      openConfirmationModel(data);
+      // Alert.alert('Reservation Confirmation', data.message, [
+      //   {
+      //     text: 'Reject',
+      //     style: 'cancel',
+      //     onPress: () => {
+      // socket.emit('reservation:confirmResponse', {
+      //   resID: data.resID,
+      //   customerID: data.customerID,
+      //   employeeID: data.employeeID,
+      //   salonID: data.salonID,
+      //   employeeName: data.employeeName,
+      //   resStatus: data.resStatus,
+      //   confirmed: false,
+      // });
+      //       console.log('Reject')
+      //     }
+      //   },
+      //   {
+      //     text: 'Confirm',
+      //     style: 'default',
+      //     onPress: () => {
+      // socket.emit('reservation:confirmResponse', {
+      //   resID: data.resID,
+      //   customerID: data.customerID,
+      //   employeeID: data.employeeID,
+      //   salonID: data.salonID,
+      //   employeeName: data.employeeName,
+      //   resStatus: data.resStatus,
+      //   confirmed: true,
+      // });
+      //       console.log('Confirm')
+      //     }
+      //   }
 
-      ]);
+      // ]);
     }
+    //message confirm handler
+
 
     const onRequestExpired = () => {
+      setModelVisibility(false);
       setRequestExpired(true);
-      Alert.alert('Request Expired', 'Your request has expired. Please try again.');
+
+      setStatusBox({
+        message: 'Request has expired.',
+        type: 'warning',
+      });
+
     }
 
     console.log("Connecting to socket with customerID:", customerID);
@@ -215,14 +265,9 @@ const ReservationScreen = () => {
     );
   };
 
-  const renderStatusBadge = (status: string) => {
-    let color = '#bbb';
-    if (status === 'pending') color = '#f1c40f';
-    else if (status === 'processing') color = '#2B6EC5';
-    else if (status === 'completed') color = '#27ae60';
-    else if (status === 'cancelled') color = '#e74c3c';
+  const renderStatusBadge = (status: 'pending' | 'processing' | 'completed' | 'cancelled') => {
     return (
-      <View style={[styles.statusBadge, { backgroundColor: color }]}>
+      <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[status] }]}>
         <Text style={styles.statusBadgeText}>{status.toUpperCase()}</Text>
       </View>
     );
@@ -239,6 +284,9 @@ const ReservationScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
+      {statusBox && (
+        <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => setStatusBox(null)} />
+      )}
       <View style={styles.headings}>
         <Text style={styles.title}>My Reservations</Text>
       </View>
@@ -247,7 +295,7 @@ const ReservationScreen = () => {
         data={reservations}
         keyExtractor={item => item.resID}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View style={[styles.card, { borderColor: STATUS_COLORS[item.resStatus], shadowColor: STATUS_COLORS[item.resStatus] }]}>
             <View style={styles.cardHeader}>
               {renderStatusBadge(item.resStatus)}
               <Text style={styles.resID}>#{item.resID}</Text>
@@ -280,6 +328,24 @@ const ReservationScreen = () => {
         refreshing={loading}
         onRefresh={fetchReservations}
       />
+      <ConfirmationModal visible={modelVisibility} title={confirmationData?.message || 'Unknown'} message={
+        <>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.bold}>Reservation ID: </Text>
+            <Text>{confirmationData?.resID}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.bold}>Employee Name: </Text>
+            <Text>{confirmationData?.employeeName}</Text>
+          </View>
+        </>
+      }
+        onConfirm={onConfirm}
+        onReject={onReject}
+        onClose={() => { setModelVisibility(false) }}
+        confirmText='Confirm'
+        rejectText='Reject'
+      />
     </SafeAreaView>
   );
 };
@@ -306,14 +372,13 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 18,
     borderRadius: 12,
-    shadowColor: THEME_COLOR,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
     marginBottom: 16,
     borderLeftWidth: 5,
-    borderLeftColor: THEME_COLOR,
+    // borderLeftColor: THEME_COLOR,
   },
   cardHeader: {
     flexDirection: 'column',

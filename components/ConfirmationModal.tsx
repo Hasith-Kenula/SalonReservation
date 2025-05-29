@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type ConfirmationModalProps = {
     visible: boolean;
-    message: string;
+    message: ReactNode;
+    title: string;
     onConfirm: () => void;
     onReject?: () => void;
     onClose: () => void;
@@ -14,6 +15,7 @@ type ConfirmationModalProps = {
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     visible,
     message,
+    title,
     onConfirm,
     onReject,
     onClose,
@@ -29,7 +31,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         >
             <View style={styles.overlay}>
                 <View style={styles.container}>
-                    <Text style={styles.message}>{message}</Text>
+                    <View style={styles.message}>{message}</View>
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>{title}</Text>
+                    </View>
                     <View style={styles.buttons}>
                         {onReject && (
                             <TouchableOpacity
@@ -65,17 +70,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    titleContainer: {
+        marginBottom: 10,
+    },
+    title: {
+        fontWeight: '600',
+    },
     container: {
         backgroundColor: '#fff',
         marginHorizontal: 30,
         borderRadius: 12,
-        padding: 20,
+        padding: 10,
         width: '80%',
         elevation: 5,
     },
     message: {
         fontSize: 16,
-        marginBottom: 20,
+        marginBottom: 10,
         color: '#222',
         textAlign: 'center',
     },
