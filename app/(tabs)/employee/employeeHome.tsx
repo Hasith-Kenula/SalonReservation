@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSocket } from '../../socket/socketProvider';
+import { useSocket } from '../../../socket/socketProvider';
 
 const THEME_COLOR = '#3586DB';
 
@@ -14,27 +14,36 @@ type Reservation = {
     customerID: string;
     resDate: string; // ISO date string
     resTime: string;
-    resStatus: string;
+    resStatus: 'processing' | 'completed' | 'cancelled' | 'pending';
     customerName: string;
     customerPhone: string;
     reservedServices: string;
     totalPrice: string;
 };
+const STATUS_COLORS = {
+    pending: '#FFC107',
+    processing: '#2B6EC5',
+    completed: '#27ae60',
+    cancelled: '#e74c3c',
 
+};
 const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toISOString().slice(0, 10);
 };
 const EmployeeHome = () => {
     const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [processingReservations, setProcessingReservations] = useState<Reservation[]>([]);
+    const [completedReservations, setCompletedReservations] = useState<Reservation[]>([]);
     const [loading, setLoading] = useState(true);
     const [salonID, setSalonID] = useState<string | null>(null);
     const [employeeID, setEmployeeID] = useState<string | null>(null);
     const [employeeName, setEmployeeName] = useState<string | null>(null);
-    const [statusBox, setStatusBox] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
+    const [statusBox, setStatusBox] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [customerConfirmation, setCustomerConfirmation] = useState<boolean>(false);
     const [processingResID, setProcessingResID] = useState<string | null>(null);
     const timeoutRef = useRef<number | null>(null);
+    const [tabBtnState, setTabBtnState] = useState<'pending' | 'processing' | 'completed'>('pending');
     const socket = useSocket();
 
     useEffect(() => {
@@ -47,6 +56,40 @@ const EmployeeHome = () => {
         };
         fetchSalonID();
     }, []);
+    const fetchProcecssingReservations = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`http://192.168.1.2:3000/reservations/employee/processing/${employeeID}`);
+            const result = await response.json();
+            if (result.success) {
+                setProcessingReservations(result.data);
+            } else {
+                setStatusBox({ message: result.message, type: 'warning' });
+                setProcessingReservations([]);
+            }
+        } catch (error) {
+
+        } finally {
+            setLoading(false);
+        }
+    }
+    const fetchCompletedReservations = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`http://192.168.1.2:3000/reservations/employee/completed/${employeeID}`);
+            const result = await response.json();
+            if (result.success) {
+                setCompletedReservations(result.data);
+            } else {
+                setStatusBox({ message: result.message, type: 'warning' });
+                setCompletedReservations([]);
+            }
+        } catch (error) {
+
+        } finally {
+            setLoading(false);
+        }
+    }
     const fetchReservations = async () => {
         setLoading(true);
         try {
@@ -105,6 +148,9 @@ const EmployeeHome = () => {
                 prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r))
                     .filter(r => r.resStatus === 'pending') // Only show pending
             );
+            setProcessingReservations(prev => prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r)).filter(r => r.resStatus === 'processing'));
+            setCompletedReservations(prev => prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r)).filter(r => r.resStatus === 'completed'));
+
         }
         );
         const onConfirmed = async (data: { resID: string, customerID: string, employeeID: string, employeeName: string, salonID: string, resStatus: string, confirmed: boolean }) => {
@@ -283,26 +329,51 @@ const EmployeeHome = () => {
     //         </View>
     //     );
     // }
-
+    const handlePendingBtn = () => {
+        setTabBtnState('pending')
+        fetchReservations();
+    }
+    const handleProcessingBtn = () => {
+        setTabBtnState('processing')
+        fetchProcecssingReservations();
+    }
+    const handleCompletedBtn = () => {
+        setTabBtnState('completed')
+        fetchCompletedReservations();
+    }
     return (
         <SafeAreaView style={styles.container}>
             {statusBox && (
                 <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => { setStatusBox(null) }} />
             )}
-            <Text style={styles.title}>Pending Reservations</Text>
+            <View style={styles.headings}>
+                <Text style={styles.title}>{tabBtnState.charAt(0).toUpperCase() + tabBtnState.slice(1)} Reservations</Text>
 
+            </View>
+            <View style={styles.btnContainer}>
+                <TouchableOpacity style={styles.tabBtn} onPress={handlePendingBtn}>
+                    <Text style={styles.tabBtnText}>Pending</Text>
+                </TouchableOpacity >
+                <TouchableOpacity style={styles.tabBtn} onPress={handleProcessingBtn}>
+                    <Text style={styles.tabBtnText}>Processing</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.tabBtn} onPress={handleCompletedBtn}>
+                    <Text style={styles.tabBtnText}>Completed</Text>
+                </TouchableOpacity>
+            </View>
             <FlatList
-                data={reservations}
+                data={tabBtnState === 'pending' ? reservations : tabBtnState === 'processing' ? processingReservations : completedReservations}
+                style={{ paddingHorizontal: 15 }}
                 keyExtractor={item => item.resID}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Text style={styles.resID}>#{item.resID}</Text>
+                    <View style={[styles.card, { borderLeftColor: STATUS_COLORS[item.resStatus] }]}>
+                        <Text style={[styles.resID, { color: STATUS_COLORS[item.resStatus] }]}>#{item.resID}</Text>
                         <Text style={styles.detail}>Phone: <Text style={styles.bold}>{item.customerPhone}</Text></Text>
                         <Text style={styles.detail}>Customer: <Text style={styles.bold}>{item.customerName}</Text></Text>
-                        <Text style={styles.detail}>Date: <Text style={styles.bold}>{formatDate(item.resDate)}</Text></Text>
+                        <Text style={styles.detail}>Date: <Text style={styles.bold}>{item.resDate}</Text></Text>
                         <Text style={styles.detail}>Time: <Text style={styles.bold}>{item.resTime}</Text></Text>
                         <Text style={styles.detail}>Services: <Text style={styles.bold}>{item.reservedServices}</Text></Text>
-                        <Text style={styles.detail}>Total: <Text style={styles.price}>LKR {item.totalPrice}</Text></Text>
+                        <Text style={[styles.detail, { color: STATUS_COLORS[item.resStatus] }]}>Total: <Text style={[styles.price, { color: STATUS_COLORS[item.resStatus] }]}>LKR {item.totalPrice}</Text></Text>
                         {item.resStatus === 'pending' && (
                             processingResID === item.resID ? (
                                 <TouchableOpacity style={[{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }]}>
@@ -321,34 +392,63 @@ const EmployeeHome = () => {
                             </TouchableOpacity>
                         )}
                         {item.resStatus === 'completed' && (
-                            <Text style={styles.detail}>Completed</Text>
+                            <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.resStatus] }]}>
+                                <Text style={styles.statusBadgeText}>{item.resStatus.toUpperCase()}</Text>
+                            </View>
                         )}
                     </View>
                 )}
-                ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No pending reservations.</Text>}
+                ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No {tabBtnState} reservations.</Text>}
                 refreshing={loading}
-                onRefresh={fetchReservations} // Trigger re-fetch
+                onRefresh={tabBtnState === 'pending' ? fetchReservations : tabBtnState === 'processing' ? fetchProcecssingReservations : fetchCompletedReservations} // Trigger re-fetch
             />
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', paddingTop: 10 },
-    title: { fontSize: 26, fontWeight: 'bold', color: THEME_COLOR, margin: 16 },
+    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60, },
+    title: {
+        alignSelf: 'flex-start',
+        marginLeft: 10,
+        fontSize: 30,
+        paddingBottom: 10,
+        //color: '#3586DB',
+        fontWeight: 'bold',
+    },
+    headings: {
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottomColor: 'rgba(131, 131, 131, 0.51)',
+        borderBottomWidth: 1,
+    },
     card: {
         backgroundColor: '#fff',
         padding: 16,
         borderRadius: 12,
         marginBottom: 14,
         borderLeftWidth: 5,
-        borderLeftColor: THEME_COLOR,
+        // borderLeftColor: THEME_COLOR,
         elevation: 3,
     },
     resID: { fontWeight: 'bold', color: THEME_COLOR, fontSize: 16, marginBottom: 4 },
     detail: { fontSize: 15, color: '#222', marginBottom: 2 },
     bold: { fontWeight: 'bold', color: '#222' },
     price: { color: THEME_COLOR, fontWeight: 'bold' },
+    btnContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    tabBtn: {
+        backgroundColor: THEME_COLOR,
+        padding: 8,
+        borderRadius: 8,
+    },
+    tabBtnText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
     processBtn: {
         backgroundColor: THEME_COLOR,
         borderRadius: 8,
@@ -356,6 +456,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 18,
         alignSelf: 'flex-end',
         marginTop: 10,
+    },
+    statusBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 12,
+        alignSelf: 'flex-start',
+        marginBottom: 5
+    },
+    statusBadgeText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 12,
+        letterSpacing: 1,
     },
     processBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 15 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },

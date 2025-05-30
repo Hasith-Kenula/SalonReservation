@@ -1,37 +1,35 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const TabBar = ({ state, descriptors, navigation }: any) => {
 
 
-  const [visibleTabs, setVisibleTabs] = useState(['']);
+  // const [visibleTabs, setVisibleTabs] = useState(['']);
 
-  useEffect(() => {
-    const setTabs = async () => {
-      const _role = await AsyncStorage.getItem('role');
+  // useEffect(() => {
+  //   const setTabs = async () => {
+  //     const _role = await AsyncStorage.getItem('role');
 
-      switch (_role) {
-        case 'Customer':
-          setVisibleTabs(['home', 'profile', 'reservation'])
-          break;
-        case 'Salon':
-          setVisibleTabs(['salonHome', 'setting', 'profile', 'detail']);
-          break;
-        case 'Employee':
-          setVisibleTabs(['employeeHome', 'setting', 'profile', 'detail']);
-          break;
-        default:
-          setVisibleTabs(['home', 'setting', 'profile']);
-          break;
-      }
-    }
-    setTabs();
-  }, []);
-  console.log('Visible Tabs:', visibleTabs);
+  //     switch (_role) {
+  //       case 'Customer':
+  //         setVisibleTabs(['home', 'profile', 'reservation'])
+  //         break;
+  //       case 'Salon':
+  //         setVisibleTabs(['salonHome', 'setting', 'profile', 'detail']);
+  //         break;
+  //       case 'Employee':
+  //         setVisibleTabs(['employeeHome', 'setting', 'profile', 'detail']);
+  //         break;
+  //       default:
+  //         setVisibleTabs(['home', 'setting', 'profile']);
+  //         break;
+  //     }
+  //   }
+  //   setTabs();
+  // }, []);
+  // console.log('Visible Tabs:', visibleTabs);
   const colors = {
     primary: '#2B6EC5',
     secondary: 'gray',
@@ -65,7 +63,7 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
             : options.title !== undefined
               ? options.title
               : route.name;
-        if (!visibleTabs.includes(route.name)) return null;
+        // if (!visibleTabs.includes(route.name)) return null;
         if (['_sitemap', '+not-found'].includes(route.name)) return null;
 
         const isFocused = state.index === index;

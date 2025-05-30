@@ -11,10 +11,11 @@ type StatusBoxProps = {
 };
 
 const STATUS_COLORS = {
-    success: '#4BB543',
+    success: '#27ae60',
     error: '#FF3333',
     info: '#3586DB',
-    warning: '#ffcc00',
+    warning: '#FFB900',
+    // warning: '#ffcc00',
 };
 
 const ICON_SIZE: number = 20;

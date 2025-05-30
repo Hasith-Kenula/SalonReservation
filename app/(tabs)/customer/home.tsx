@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import FocusableTextInput from '../../components/FocusableTextInput';
-import SalonCard from '../../components/SalonCard';
+import FocusableTextInput from '../../../components/FocusableTextInput';
+import SalonCard from '../../../components/SalonCard';
 
 type Salon = {
   salonID: string;
