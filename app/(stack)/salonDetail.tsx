@@ -1,9 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+
+type TodaysReservedTimes = {
+    resID: string,
+    startTime: string,
+    endTime: string,
+}
 
 const SalonDetail = () => {
     const { name, services, distance, rate, price, ownerName, priceRange, salonID } = useLocalSearchParams();
@@ -18,6 +25,7 @@ const SalonDetail = () => {
     const [selectedTime, setSelectedTime] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const [todaysReservedTimes, setTodaysReservedTimes] = useState<TodaysReservedTimes[]>([]);
 
     const toggleService = (service: { service: string, price: string, serviceID: string }) => {
         const exists = selectedServices.some(
@@ -32,6 +40,17 @@ const SalonDetail = () => {
         }
     };
 
+    useEffect(() => {
+        //Fetch Today's Reservation for the salon
+        const fetchTodaysReservedTimes = async () => {
+            const todaysReseredTimes = await fetch(`http://192.168.1.2:3000/reservations/today/${salonID}`);
+            const response = await todaysReseredTimes.json();
+            if (response.success) {
+                setTodaysReservedTimes(response.data);
+            }
+        }
+        fetchTodaysReservedTimes();
+    }, [salonID])
     const handleReserve = async () => {
         console.log('Selected Services:', selectedServices);
         console.log('Selected Service Length:', selectedServices.length);
@@ -47,7 +66,7 @@ const SalonDetail = () => {
             alert('please select a Time');
             return
         }
-        // Add your reservation logic here
+        // reservation/reserve logic here
         Alert.alert('Confirm Your Reservation', `Reserved ${selectedServices.map((item) => item.service).join(', ')} at ${name}\nDate: ${selectedDate || 'Not set'}\nTime: ${selectedTime || 'Not set'}`, [
             { text: 'Cancel', style: 'cancel' },
             {
@@ -134,6 +153,21 @@ const SalonDetail = () => {
                                 </Text>
                             </TouchableOpacity>
                         );
+                    })}
+                </View>
+                <View style={Style.section}>
+                    <Text style={Style.sectionTitle}>Today's Reserved Times</Text>
+                    {todaysReservedTimes.map((times) => {
+                        return (
+                            <TouchableOpacity
+                                key={times.resID}
+                                style={Style.timeItem}
+                            >
+                                <Text>Start Time : {times.startTime}</Text>
+                                <Text>End Time : {times.endTime}</Text>
+
+                            </TouchableOpacity>
+                        )
                     })}
                 </View>
                 <TouchableOpacity
@@ -229,6 +263,14 @@ const Style = StyleSheet.create({
         color: '#222',
     },
     serviceItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: '#f0f0f0',
+        marginBottom: 8,
+    },
+    timeItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 12,

@@ -27,6 +27,14 @@ const STATUS_COLORS = {
     cancelled: '#e74c3c',
 
 };
+const TAB_BTN_COLOR = {
+    activeBackground: THEME_COLOR,
+    inactiveBackground: '#E1EAFF',
+    activeText: '#FFFFFF',
+    inactiveText: THEME_COLOR,
+    sahdowColor: THEME_COLOR,
+
+}
 const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toISOString().slice(0, 10);
@@ -351,14 +359,14 @@ const EmployeeHome = () => {
 
             </View>
             <View style={styles.btnContainer}>
-                <TouchableOpacity style={styles.tabBtn} onPress={handlePendingBtn}>
-                    <Text style={styles.tabBtnText}>Pending</Text>
+                <TouchableOpacity style={[styles.tabBtn, tabBtnState === 'pending' ? styles.tabBtnActive : styles.tabBtnInActive]} onPress={handlePendingBtn}>
+                    <Text style={[styles.tabBtnText, tabBtnState === 'pending' ? styles.tabBtnTextActive : styles.tabBtnTextInActive]}>Pending</Text>
                 </TouchableOpacity >
-                <TouchableOpacity style={styles.tabBtn} onPress={handleProcessingBtn}>
-                    <Text style={styles.tabBtnText}>Processing</Text>
+                <TouchableOpacity style={[styles.tabBtn, tabBtnState === 'processing' ? styles.tabBtnActive : styles.tabBtnInActive]} onPress={handleProcessingBtn}>
+                    <Text style={[styles.tabBtnText, tabBtnState === 'processing' ? styles.tabBtnTextActive : styles.tabBtnTextInActive]}>Processing</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.tabBtn} onPress={handleCompletedBtn}>
-                    <Text style={styles.tabBtnText}>Completed</Text>
+                <TouchableOpacity style={[styles.tabBtn, tabBtnState === 'completed' ? styles.tabBtnActive : styles.tabBtnInActive]} onPress={handleCompletedBtn}>
+                    <Text style={[styles.tabBtnText, tabBtnState === 'completed' ? styles.tabBtnTextActive : styles.tabBtnTextInActive]}>Completed</Text>
                 </TouchableOpacity>
             </View>
             <FlatList
@@ -366,14 +374,14 @@ const EmployeeHome = () => {
                 style={{ paddingHorizontal: 15 }}
                 keyExtractor={item => item.resID}
                 renderItem={({ item }) => (
-                    <View style={[styles.card, { borderLeftColor: STATUS_COLORS[item.resStatus] }]}>
-                        <Text style={[styles.resID, { color: STATUS_COLORS[item.resStatus] }]}>#{item.resID}</Text>
+                    <View style={[styles.card,]}>
+                        <Text style={[styles.resID,]}>#{item.resID}</Text>
                         <Text style={styles.detail}>Phone: <Text style={styles.bold}>{item.customerPhone}</Text></Text>
                         <Text style={styles.detail}>Customer: <Text style={styles.bold}>{item.customerName}</Text></Text>
                         <Text style={styles.detail}>Date: <Text style={styles.bold}>{item.resDate}</Text></Text>
                         <Text style={styles.detail}>Time: <Text style={styles.bold}>{item.resTime}</Text></Text>
                         <Text style={styles.detail}>Services: <Text style={styles.bold}>{item.reservedServices}</Text></Text>
-                        <Text style={[styles.detail, { color: STATUS_COLORS[item.resStatus] }]}>Total: <Text style={[styles.price, { color: STATUS_COLORS[item.resStatus] }]}>LKR {item.totalPrice}</Text></Text>
+                        <Text style={[styles.detail,]}>Total: <Text style={[styles.price,]}>LKR {item.totalPrice}</Text></Text>
                         {item.resStatus === 'pending' && (
                             processingResID === item.resID ? (
                                 <TouchableOpacity style={[{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }]}>
@@ -392,7 +400,7 @@ const EmployeeHome = () => {
                             </TouchableOpacity>
                         )}
                         {item.resStatus === 'completed' && (
-                            <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.resStatus] }]}>
+                            <View style={[styles.statusBadge, { backgroundColor: THEME_COLOR }]}>
                                 <Text style={styles.statusBadgeText}>{item.resStatus.toUpperCase()}</Text>
                             </View>
                         )}
@@ -429,7 +437,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginBottom: 14,
         borderLeftWidth: 5,
-        // borderLeftColor: THEME_COLOR,
+        borderLeftColor: THEME_COLOR,
         elevation: 3,
     },
     resID: { fontWeight: 'bold', color: THEME_COLOR, fontSize: 16, marginBottom: 4 },
@@ -440,14 +448,36 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
     },
+
     tabBtn: {
-        backgroundColor: THEME_COLOR,
         padding: 8,
         borderRadius: 8,
+        shadowColor: TAB_BTN_COLOR['sahdowColor'],
+        shadowOffset: {
+            width: 2,
+            height: 2,
+        },
+        shadowOpacity: 1,
+        shadowRadius: 4,
+        elevation: 4,
+
     },
+    tabBtnActive: {
+        backgroundColor: TAB_BTN_COLOR['activeBackground']
+    },
+    tabBtnInActive: {
+        backgroundColor: TAB_BTN_COLOR['inactiveBackground'],
+    },
+
     tabBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontWeight: '500',
+    },
+    tabBtnTextActive: {
+        color: TAB_BTN_COLOR['activeText']
+    },
+    tabBtnTextInActive: {
+        color: TAB_BTN_COLOR['inactiveText']
     },
     processBtn: {
         backgroundColor: THEME_COLOR,
