@@ -1,7 +1,8 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const TabBar = ({ state, descriptors, navigation }: any) => {
 
@@ -52,74 +53,90 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
         return <MaterialIcons name="error" size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
     }
   }
+  const intensity = Platform.OS === 'android' ? 100 : 70
   return (
-    <View style={Styles.container}>
-      {state.routes.map((route: any, index: any) => {
+    <View style={Styles.wrapper}>
+      <BlurView style={Styles.container} intensity={intensity} tint='light'>
+        {state.routes.map((route: any, index: any) => {
 
-        const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-              ? options.title
-              : route.name;
-        // if (!visibleTabs.includes(route.name)) return null;
-        if (['_sitemap', '+not-found'].includes(route.name)) return null;
+          const { options } = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+                ? options.title
+                : route.name;
+          // if (!visibleTabs.includes(route.name)) return null;
+          if (['_sitemap', '+not-found'].includes(route.name)) return null;
 
-        const isFocused = state.index === index;
+          const isFocused = state.index === index;
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
-          }
-        };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
-        };
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            });
+          };
 
-        return (
-          <TouchableOpacity
-            key={route.name}
-            accessibilityRole='button'
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarButtonTestID}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            style={Styles.Item}
-          >
-            {getIcon(route.name, isFocused)}
-            <Text style={{ color: isFocused ? colors.primary : colors.secondary, fontSize: isFocused ? 15 : 14, }}
-              numberOfLines={1}>
+          return (
+            <TouchableOpacity
+              key={route.name}
+              accessibilityRole='button'
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarButtonTestID}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={Styles.Item}
+            >
+              {getIcon(route.name, isFocused)}
+              <Text style={{ color: isFocused ? colors.primary : colors.secondary, fontSize: isFocused ? 15 : 14, }}
+                numberOfLines={1}>
 
-              {label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </BlurView>
     </View>
   )
 }
 const Styles = StyleSheet.create({
+  wrapper: {
+    backgroundColor: Platform.OS === 'android' ? 'rgba(255, 255, 255, 0.47)' : ''
+  },
   container: {
-    height: 80,
+    height: 70,
     width: '100%',
-    flex: 1,
     position: 'absolute',
     bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     flexDirection: 'row',
     paddingBottom: 10,
-    backgroundColor: 'white',
+
+
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderTopWidth: 1,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: -3 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 10,
+    // elevation: 10,
+    // backgroundColor: 'rgba(107, 41, 41, 0.86)',
+
 
   },
   Item: {

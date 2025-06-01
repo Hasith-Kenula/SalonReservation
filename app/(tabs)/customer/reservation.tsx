@@ -3,9 +3,12 @@ import StatusBox from '@/components/StatusBox';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Linking, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Linking, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSocket } from '../../../socket/socketProvider';
+
+
+const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight;
 
 type Reservations = {
   resID: string;
@@ -35,6 +38,8 @@ const PhoneIcon = () => {
 
 const ReservationScreen = () => {
   console.log("Reservation Screen");
+
+
   const [reservations, setReservations] = useState<Reservations[]>([]);
   const [loading, setLoading] = useState(true);
   const [customerID, setCustomerID] = useState<string | null>(null);
@@ -282,7 +287,7 @@ const ReservationScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container,]} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" />
       {statusBox && (
         <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => setStatusBox(null)} />
@@ -291,7 +296,8 @@ const ReservationScreen = () => {
         <Text style={styles.title}>My Reservations</Text>
       </View>
       <FlatList
-        style={{ paddingHorizontal: 15, paddingTop: 20, }}
+        contentContainerStyle={{ paddingBottom: 60, paddingTop: 20 }}
+        style={{ paddingHorizontal: 15, }}
         data={reservations}
         keyExtractor={item => item.resID}
         renderItem={({ item }) => (
@@ -351,7 +357,7 @@ const ReservationScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', marginBottom: 80 },
+  container: { flex: 1, backgroundColor: 'white', },
   title: {
     alignSelf: 'flex-start',
     marginLeft: 10,
@@ -365,6 +371,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomColor: 'rgba(131, 131, 131, 0.51)',
+
     borderBottomWidth: 1,
   },
   card: {

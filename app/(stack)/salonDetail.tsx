@@ -1,3 +1,4 @@
+import { useSocket } from '@/socket/socketProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
@@ -20,12 +21,40 @@ const SalonDetail = () => {
             ? services
             : [];
 
+    const socket = useSocket();
+    const [customerID, setCustomerID] = useState('');
     const [selectedServices, setSelectedServices] = useState<{ service: string; price: string; serviceID: string }[]>([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [todaysReservedTimes, setTodaysReservedTimes] = useState<TodaysReservedTimes[]>([]);
+
+    const getCustomerID = async () => {
+        const customerJSON = await AsyncStorage.getItem('user');
+        if (customerJSON) setCustomerID(JSON.parse(customerJSON).customerID)
+    }
+    const handleTodaysReservation = async ({ resID, startTime, endTime }: TodaysReservedTimes) => {
+        console.log(`Recive: ${resID}, ${startTime}, ${endTime}`);
+        setTodaysReservedTimes((prev) => {
+            const updated = [...prev.filter(r => r.resID !== resID), { resID, startTime, endTime }];
+            updated.sort((a, b) => a.startTime.localeCompare(b.startTime));
+            return updated;
+        });
+    }
+    useEffect(() => {
+        getCustomerID();
+        if (!socket || !customerID || !salonID) return;
+        const roomName = `salonCustomer_${salonID}`
+        socket.emit('joinRoom', roomName);
+
+        socket.on('reservation:todays', handleTodaysReservation);
+
+        return () => {
+            socket.emit('leaveRoom', roomName);
+            socket.off('reservation:todays', handleTodaysReservation);
+        }
+    }, [socket, salonID, customerID]);
 
     const toggleService = (service: { service: string, price: string, serviceID: string }) => {
         const exists = selectedServices.some(
@@ -47,8 +76,11 @@ const SalonDetail = () => {
             const response = await todaysReseredTimes.json();
             if (response.success) {
                 setTodaysReservedTimes(response.data);
+            } else {
+
             }
         }
+
         fetchTodaysReservedTimes();
     }, [salonID])
     const handleReserve = async () => {
@@ -109,9 +141,21 @@ const SalonDetail = () => {
             },
         ]);
     };
-
+    const isSameDay = (date1: Date, date2: Date) => {
+        return (
+            date1.getFullYear() === date2.getFullYear() &&
+            date1.getMonth() === date2.getMonth() &&
+            date1.getDate() === date2.getDate()
+        );
+    }
+    const getMinimumTime = () => {
+        if (selectedDate && isSameDay(new Date(selectedDate), new Date())) {
+            return new Date();
+        }
+        return new Date('1970-01-01T00:00:00:');
+    }
     return (
-        <SafeAreaView style={Style.mainContainer}>
+        <SafeAreaView style={Style.mainContainer} edges={['left', 'top', 'right']}>
             <StatusBar backgroundColor="#f0f0f0" barStyle="dark-content" />
             <View style={Style.headings}>
                 <Text style={Style.title}>Salon Details</Text>
@@ -157,18 +201,24 @@ const SalonDetail = () => {
                 </View>
                 <View style={Style.section}>
                     <Text style={Style.sectionTitle}>Today's Reserved Times</Text>
-                    {todaysReservedTimes.map((times) => {
-                        return (
-                            <TouchableOpacity
-                                key={times.resID}
-                                style={Style.timeItem}
-                            >
-                                <Text>Start Time : {times.startTime}</Text>
-                                <Text>End Time : {times.endTime}</Text>
+                    <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={true}>
+                        {todaysReservedTimes.length > 0 ? todaysReservedTimes.map((times, index) => {
 
-                            </TouchableOpacity>
-                        )
-                    })}
+                            return (
+                                <TouchableOpacity
+                                    key={times.resID}
+                                    style={Style.timeItem}
+                                >
+                                    <Text>Start Time : {times.startTime}</Text>
+                                    <Text>End Time : {times.endTime}</Text>
+
+                                </TouchableOpacity>
+                            )
+                        }) : (
+                            <Text>No reserved times found for today</Text>
+                        )}
+
+                    </ScrollView>
                 </View>
                 <TouchableOpacity
                     style={Style.input}
@@ -181,9 +231,17 @@ const SalonDetail = () => {
                         value={selectedDate ? new Date(selectedDate) : new Date()}
                         mode="date"
                         display="default"
+                        textColor='#3586DB'
+                        minimumDate={new Date()}
                         onChange={(event, date) => {
                             setShowDatePicker(false);
-                            if (date) setSelectedDate(date.toISOString().split('T')[0]);
+                            setSelectedTime('');
+                            if (date) {
+                                const year = date.getFullYear();
+                                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                const day = date.getDate().toString().padStart(2, '0');
+                                setSelectedDate(`${year}-${month}-${day}`);
+                            }
                         }}
                     />
                 )}
@@ -199,6 +257,9 @@ const SalonDetail = () => {
                         value={selectedTime ? new Date(`1970-01-01T${selectedTime}:00`) : new Date()}
                         mode="time"
                         display="default"
+                        minimumDate={
+                            getMinimumTime()
+                        }
                         onChange={(event, date) => {
                             setShowTimePicker(false);
                             if (date) setSelectedTime(date.toTimeString().slice(0, 5));
