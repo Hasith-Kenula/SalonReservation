@@ -2,7 +2,11 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import FocusableTextInput from '../../components/FocusableTextInput';
+
+
+
 const Registration = () => {
     const [role, setRole] = useState('Customer');
     const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +19,9 @@ const Registration = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    const [isPhoneVerified, setIsPhoneVerified] = useState(false);
     const handleRegister = async () => {
+        if (!isPhoneVerified) return alert('Please verify your phone number');
         try {
             let apiUrl = '';
             let payload = {}
@@ -83,6 +89,7 @@ const Registration = () => {
             <View style={Style.headings}>
                 <Text style={Style.title}>Registration</Text>
             </View>
+
             <ScrollView style={Style.container} keyboardDismissMode='on-drag' keyboardShouldPersistTaps='handled'>
                 <View style={{ paddingBottom: 5, flexDirection: 'row', alignContent: 'center' }}>
                     <Text style={Style.subTitle}>Register as </Text>
@@ -101,7 +108,7 @@ const Registration = () => {
                     <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your name' : 'Enter your salon name'}
                         placeholderTextColor="gray"
                         value={name}
-                        onChangeText={(text) => { setName(text) }}
+                        onChangeText={setName}
                         style={Style.input} />
                 </View>
                 {(role == 'Salon') &&
@@ -109,7 +116,7 @@ const Registration = () => {
                         <Text style={Style.label}>Owner Name</Text>
                         <FocusableTextInput placeholder="Enter owner name"
                             value={ownerName}
-                            onChangeText={(text) => { setOwnerName(text) }}
+                            onChangeText={setOwnerName}
                             placeholderTextColor="gray"
                             style={Style.input} />
                     </View>
@@ -120,20 +127,22 @@ const Registration = () => {
                         placeholderTextColor="gray"
                         style={Style.input} />
                 </View> */}
-                <View style={Style.inputContainer}>
+                {/* <PhoneAuth onVerified={(verifiedPhome) => { setPhone(verifiedPhome); setIsPhoneVerified(true) }} /> */}
+
+                {/* <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Phone Number' : 'Salon Phone Number'}</Text>
                     <FocusableTextInput placeholder="070 1234567"
                         value={phone}
-                        onChangeText={(text) => { setPhone(text) }}
+                        onChangeText={setPhone}
                         placeholderTextColor="gray"
                         style={Style.input} />
-                </View>
+                </View> */}
                 <View style={Style.inputContainer}>
                     <Text style={Style.label}>{role == 'Customer' ? 'Address' : 'Salon Address'}</Text>
                     <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your address' : 'Enter salon address'}
                         placeholderTextColor="gray"
                         value={address}
-                        onChangeText={(text) => { setAddress(text) }}
+                        onChangeText={setAddress}
                         style={Style.input} />
                 </View>
                 <View style={Style.inputContainer}>
@@ -142,7 +151,7 @@ const Registration = () => {
                         placeholderTextColor="gray"
                         secureTextEntry={!showPassword}
                         value={password}
-                        onChangeText={(text) => setPassword(text)}
+                        onChangeText={setPassword}
                         style={[Style.input, { paddingRight: 40 }]}
                     />
                 </View>
@@ -152,7 +161,7 @@ const Registration = () => {
                         placeholderTextColor="gray"
                         secureTextEntry={!showPassword}
                         value={confirmPassword}
-                        onChangeText={(text) => setConfirmPassword(text)}
+                        onChangeText={setConfirmPassword}
                         style={[Style.input, { paddingRight: 40 }]}
                     />
                 </View>
