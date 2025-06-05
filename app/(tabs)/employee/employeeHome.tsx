@@ -279,6 +279,7 @@ const EmployeeHome = () => {
             }, 30000); // 30 seconds
 
             if (socket) {
+                console.log("Request sending to customer....");
                 socket.emit('reservation:sendRequestToCustomer', {
                     resID: resID,
                     resStatus: newStatus,

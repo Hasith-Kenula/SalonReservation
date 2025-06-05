@@ -193,8 +193,6 @@ const ReservationScreen = () => {
 
     }
 
-    console.log("Connecting to socket with customerID:", customerID);
-
     socket.on('reservation:statusUpdate', (updatedReservation: Reservations) => {
       //alert('status updating');
       console.log('Reservation status updated:', updatedReservation);
