@@ -13,6 +13,14 @@ type TodaysReservedTimes = {
     endTime: string,
 }
 
+type SalonOpeningHours = {
+    salonID: string;
+    day_of_week: string;
+    open_time: string;
+    close_time: string;
+    is_closed: boolean;
+}
+
 const SalonDetail = () => {
     const { name, services, distance, rate, price, ownerName, priceRange, salonID } = useLocalSearchParams();
     const availableServices = typeof services === 'string'
@@ -29,6 +37,7 @@ const SalonDetail = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [todaysReservedTimes, setTodaysReservedTimes] = useState<TodaysReservedTimes[]>([]);
+    const [salonOpeningHours, setSalonOpeningHours] = useState<SalonOpeningHours[] | null>(null);
 
     const getCustomerID = async () => {
         const customerJSON = await AsyncStorage.getItem('user');
@@ -41,6 +50,15 @@ const SalonDetail = () => {
             updated.sort((a, b) => a.startTime.localeCompare(b.startTime));
             return updated;
         });
+    }
+    const fetchSalonOpeningHours = async () => {
+        const response = await fetch(`http://192.168.1.2:3000/salon_opening_hours/${salonID}`);
+        const result = await response.json();
+        if (result.success) {
+            setSalonOpeningHours(result.data);
+        } else {
+            setSalonOpeningHours(null);
+        }
     }
     useEffect(() => {
         getCustomerID();
@@ -82,6 +100,7 @@ const SalonDetail = () => {
         }
 
         fetchTodaysReservedTimes();
+        fetchSalonOpeningHours();
     }, [salonID])
     const handleReserve = async () => {
         console.log('Selected Services:', selectedServices);
@@ -154,6 +173,13 @@ const SalonDetail = () => {
         }
         return new Date('1970-01-01T00:00:00:');
     }
+    const today = () => {
+        const date = new Date();
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        const day = days[date.getDay()];
+        return day;
+    }
     return (
         <SafeAreaView style={Style.mainContainer} edges={['left', 'top', 'right']}>
             <StatusBar backgroundColor="#f0f0f0" barStyle="dark-content" />
@@ -169,7 +195,19 @@ const SalonDetail = () => {
                     <Text style={Style.info}>Rating: {rate}</Text>
                     <Text style={Style.info}>Price Range: {priceRange}</Text>
                 </View>
-
+                <View style={Style.section}>
+                    <Text style={Style.sectionTitle}>Opening Times</Text>
+                    {salonOpeningHours?.map((openingHours: SalonOpeningHours) => {
+                        return (
+                            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
+                                <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>{openingHours.day_of_week}</Text>
+                                <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>
+                                    {!openingHours.is_closed ? (`${openingHours.open_time} - ${openingHours.close_time}`) : ('Closed')}
+                                </Text>
+                            </View>
+                        )
+                    })}
+                </View>
                 <View style={Style.section}>
                     <Text style={Style.sectionTitle}>Select Services</Text>
                     {availableServices.map((service: any) => {
