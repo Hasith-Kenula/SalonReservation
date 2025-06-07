@@ -18,6 +18,7 @@ const _layout = () => {
                     backgroundColor: '#f9f9f9',
                 },
             }} />
+            <Stack.Screen name='manageOpeningHours' options={{ headerShown: false }} />
         </Stack>
     )
 }

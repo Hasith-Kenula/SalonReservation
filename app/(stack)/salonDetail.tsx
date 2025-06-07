@@ -14,6 +14,7 @@ type TodaysReservedTimes = {
 }
 
 type SalonOpeningHours = {
+    id: string;
     salonID: string;
     day_of_week: string;
     open_time: string;
@@ -199,7 +200,7 @@ const SalonDetail = () => {
                     <Text style={Style.sectionTitle}>Opening Times</Text>
                     {salonOpeningHours?.map((openingHours: SalonOpeningHours) => {
                         return (
-                            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
+                            <View key={openingHours.id} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
                                 <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>{openingHours.day_of_week}</Text>
                                 <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>
                                     {!openingHours.is_closed ? (`${openingHours.open_time} - ${openingHours.close_time}`) : ('Closed')}

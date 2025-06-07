@@ -85,6 +85,7 @@ const SalonHome = () => {
                 todaysReservations: result.data.todaysReservation,
             });
         } else {
+
             console.log(result);
         }
     }
@@ -139,23 +140,23 @@ const SalonHome = () => {
                 <View style={styles.statsRow}>
                     <View style={styles.statBox}>
                         <Text style={styles.statLabel}>Today's Reservations</Text>
-                        <Text style={styles.statNumber}>{stats?.todaysReservations}</Text>
+                        <Text style={styles.statNumber}>{stats?.todaysReservations || 0}</Text>
                     </View>
                     <View style={styles.statBox}>
                         <Text style={styles.statLabel}>Today's Revenue</Text>
-                        <Text style={styles.statNumber}>LKR {stats?.totalRevenue}</Text>
+                        <Text style={styles.statNumber}>LKR {stats?.totalRevenue || 0}</Text>
                     </View>
                     <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>Pending</Text>
-                        <Text style={styles.statNumber}>{stats?.pending}</Text>
+                        <Text style={styles.statLabel}>Pending Reservations</Text>
+                        <Text style={styles.statNumber}>{stats?.pending || 0}</Text>
                     </View>
                 </View>
 
                 {/* Quick Actions */}
                 <View style={styles.quickActions}>
-                    {/* <TouchableOpacity style={styles.actionButton} onPress={() => { }}>
-                        <Text style={styles.actionText}>View Reservations</Text>
-                    </TouchableOpacity> */}
+                    <TouchableOpacity style={styles.actionButton} onPress={() => { router.push('/(stack)/manageOpeningHours'); }}>
+                        <Text style={styles.actionText}>Opening Hours</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.actionButton} onPress={() => { router.push('/serviceManagement') }}>
                         <Text style={styles.actionText}>Manage Services</Text>
                     </TouchableOpacity>
@@ -229,7 +230,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         elevation: 2,
     },
-    statBox: { backgroundColor: '#fff', borderRadius: 10, padding: 14, alignItems: 'center', flex: 1, marginHorizontal: 4, elevation: 2 },
+    statBox: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 14,
+        alignItems: 'center',
+        flex: 1,
+        marginHorizontal: 4,
+        elevation: 2
+    },
     statNumber: { fontSize: 20, fontWeight: 'bold', color: '#3586DB' },
     statLabel: { fontSize: 13, color: '#888', marginTop: 2 },
     quickActions: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 },
