@@ -1,6 +1,6 @@
 import StatusBox from '@/components/StatusBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSocket } from '../../../socket/socketProvider';
@@ -153,12 +153,34 @@ const EmployeeHome = () => {
         socket.on('reservation:statusUpdate', (updatedreservation: Reservation) => {
             //alert('status updating');
             setReservations(prev =>
-                prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r))
-                    .filter(r => r.resStatus === 'pending') // Only show pending
+                prev.filter(r => r.resID !== updatedreservation.resID && r.resStatus === 'pending')
             );
-            setProcessingReservations(prev => prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r)).filter(r => r.resStatus === 'processing'));
-            setCompletedReservations(prev => prev.map(r => (r.resID === updatedreservation.resID ? updatedreservation : r)).filter(r => r.resStatus === 'completed'));
+            setProcessingReservations(prev =>
+                prev.filter(r => r.resID !== updatedreservation.resID && r.resStatus === 'processing')
+            );
+            setCompletedReservations(prev =>
+                prev.filter(r => r.resID !== updatedreservation.resID && r.resStatus === 'completed')
+            );
 
+            // Find existing reservation in any list to preserve missing fields
+            const findExistingReservation = () => {
+                const allReservations = [...reservations, ...processingReservations, ...completedReservations];
+                return allReservations.find(r => r.resID === updatedreservation.resID);
+            };
+
+            const existingReservation = findExistingReservation();
+
+            // Merge updated reservation with existing to preserve missing fields
+            const mergedReservation = { ...existingReservation, ...updatedreservation };
+
+            // Add merged reservation to the correct list based on its status
+            if (mergedReservation.resStatus === 'pending') {
+                setReservations(prev => [...prev, mergedReservation]);
+            } else if (mergedReservation.resStatus === 'processing') {
+                setProcessingReservations(prev => [...prev, mergedReservation]);
+            } else if (mergedReservation.resStatus === 'completed') {
+                setCompletedReservations(prev => [...prev, mergedReservation]);
+            }
         }
         );
         const onConfirmed = async (data: { resID: string, customerID: string, employeeID: string, employeeName: string, salonID: string, resStatus: string, confirmed: boolean }) => {
@@ -340,16 +362,26 @@ const EmployeeHome = () => {
     // }
     const handlePendingBtn = () => {
         setTabBtnState('pending')
-        fetchReservations();
     }
     const handleProcessingBtn = () => {
         setTabBtnState('processing')
-        fetchProcecssingReservations();
     }
     const handleCompletedBtn = () => {
         setTabBtnState('completed')
-        fetchCompletedReservations();
     }
+
+    const filterReservations = useMemo(() => {
+        switch (tabBtnState) {
+            case 'pending':
+                return reservations;
+            case 'processing':
+                return processingReservations;
+            case 'completed':
+                return completedReservations;
+            default:
+                return [];
+        }
+    }, [tabBtnState, reservations, processingReservations, completedReservations]);
     return (
         <SafeAreaView style={styles.container}>
             {statusBox && (
@@ -371,7 +403,7 @@ const EmployeeHome = () => {
                 </TouchableOpacity>
             </View>
             <FlatList
-                data={tabBtnState === 'pending' ? reservations : tabBtnState === 'processing' ? processingReservations : completedReservations}
+                data={filterReservations}
                 style={{ paddingHorizontal: 15 }}
                 keyExtractor={item => item.resID}
                 renderItem={({ item }) => (
@@ -396,9 +428,17 @@ const EmployeeHome = () => {
                             )
                         )}
                         {item.resStatus === 'processing' && (
-                            <TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'completed', item.customerID)}>
-                                <Text style={styles.processBtnText}>Mark as Complete</Text>
-                            </TouchableOpacity>
+                            processingResID === item.resID ? (
+                                <TouchableOpacity style={[{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }]}>
+                                    <Text style={[styles.processBtnText, { color: THEME_COLOR, marginRight: 10 }]}>Wait for customer's response</Text>
+                                    <ActivityIndicator size="small" color={THEME_COLOR} />
+                                </TouchableOpacity>
+                            ) : (
+                                < TouchableOpacity style={styles.processBtn} onPress={() => handleProcessComplete(item.resID, 'completed', item.customerID)}>
+                                    <Text style={styles.processBtnText}>Mark as Complete</Text>
+                                </TouchableOpacity>
+                            )
+
                         )}
                         {item.resStatus === 'completed' && (
                             <View style={[styles.statusBadge, { backgroundColor: THEME_COLOR }]}>
@@ -406,12 +446,13 @@ const EmployeeHome = () => {
                             </View>
                         )}
                     </View>
-                )}
-                ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No {tabBtnState} reservations.</Text>}
+                )
+                }
+                ListEmptyComponent={< Text style={{ color: '#888', textAlign: 'center' }}> No {tabBtnState} reservations.</Text >}
                 refreshing={loading}
                 onRefresh={tabBtnState === 'pending' ? fetchReservations : tabBtnState === 'processing' ? fetchProcecssingReservations : fetchCompletedReservations} // Trigger re-fetch
             />
-        </SafeAreaView>
+        </SafeAreaView >
     );
 };
 

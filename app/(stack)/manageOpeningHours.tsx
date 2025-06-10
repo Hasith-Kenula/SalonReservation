@@ -1,7 +1,7 @@
 import StatusBox from '@/components/StatusBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -129,11 +129,20 @@ const ManageOpeningHours = () => {
         };
     }
 
+    const statusBoxElement = useMemo(() => {
+        if (!statusBox) return null;
+        return (
+            <StatusBox
+                message={statusBox.message}
+                type={statusBox.type}
+                onHide={() => setStatusBox(null)}
+            />
+        );
+    }, [statusBox]);
+
     return (
         <SafeAreaView style={styles.container} edges={['left', 'top', 'right']}>
-            {statusBox && (
-                <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => setStatusBox(null)} />
-            )}
+            {statusBoxElement}
             <View style={styles.headings}>
                 <Text style={styles.title}>Manage Opening Hours</Text>
             </View>
@@ -182,6 +191,7 @@ const ManageOpeningHours = () => {
                                         onChange={(event, time) => {
                                             if (!time) return;
                                             const selectedTime = time.toTimeString().slice(0, 5);
+                                            console.log(selectedTime);
                                             setOpeningHours((prev) => {
                                                 return [...prev.map((item) => item.id === openHour.id ? { ...item, open_time: selectedTime } : item)];
                                             });
@@ -199,6 +209,7 @@ const ManageOpeningHours = () => {
                                         onChange={(event, time) => {
                                             if (!time) return;
                                             const selectedTime = time.toTimeString().slice(0, 5);
+                                            console.log(openHour.close_time);
                                             setOpeningHours((prev) => {
                                                 return [...prev.map((item) => item.id === openHour.id ? { ...item, close_time: selectedTime } : item)];
                                             });
@@ -234,7 +245,7 @@ const styles = StyleSheet.create({
     title: {
         alignSelf: 'flex-start',
         marginLeft: 10,
-        fontSize: 30,
+        fontSize: 24,
         paddingBottom: 10,
         //color: '#3586DB',
         fontWeight: 'bold',

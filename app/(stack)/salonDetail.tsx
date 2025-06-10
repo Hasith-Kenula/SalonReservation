@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -39,6 +39,7 @@ const SalonDetail = () => {
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [todaysReservedTimes, setTodaysReservedTimes] = useState<TodaysReservedTimes[]>([]);
     const [salonOpeningHours, setSalonOpeningHours] = useState<SalonOpeningHours[] | null>(null);
+    const [salonOpeningHoursLoading, setSalonOpeningHoursLoading] = useState(false);
 
     const getCustomerID = async () => {
         const customerJSON = await AsyncStorage.getItem('user');
@@ -52,13 +53,28 @@ const SalonDetail = () => {
             return updated;
         });
     }
+    const handleOpeningHourUpdate = (data: SalonOpeningHours) => {
+        console.log(data);
+        setSalonOpeningHours((prev) => {
+            const updated = prev!.map(r => r.id === data.id ? data : r);
+            return updated;
+        });
+    }
     const fetchSalonOpeningHours = async () => {
-        const response = await fetch(`http://192.168.1.2:3000/salon_opening_hours/${salonID}`);
-        const result = await response.json();
-        if (result.success) {
-            setSalonOpeningHours(result.data);
-        } else {
-            setSalonOpeningHours(null);
+        try {
+            setSalonOpeningHoursLoading(true);
+            const response = await fetch(`http://192.168.1.2:3000/salon_opening_hours/${salonID}`);
+            const result = await response.json();
+            if (result.success) {
+                setSalonOpeningHours(result.data);
+            } else {
+                setSalonOpeningHours(null);
+            }
+
+        } catch (error) {
+            console.error('Error fetching salon opening hours:', error);
+        } finally {
+            setSalonOpeningHoursLoading(false);
         }
     }
     useEffect(() => {
@@ -68,9 +84,11 @@ const SalonDetail = () => {
         socket.emit('joinRoom', roomName);
 
         socket.on('reservation:todays', handleTodaysReservation);
+        socket.on('salonOpeningHours:update', handleOpeningHourUpdate);
 
         return () => {
             socket.emit('leaveRoom', roomName);
+            socket.off('salonOpeningHours:update', handleOpeningHourUpdate);
             socket.off('reservation:todays', handleTodaysReservation);
         }
     }, [socket, salonID, customerID]);
@@ -181,6 +199,28 @@ const SalonDetail = () => {
         const day = days[date.getDay()];
         return day;
     }
+    const parseTimeStringToDate = (timeString: string) => {
+        if (!timeString) return new Date();
+        const [hours, minutes, seconds] = timeString.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours || 0, minutes || 0, seconds || 0, 0);
+        return date;
+    };
+    const convert24hTo12h = (time24: string) => {
+        const [hourStr, minuteStr] = time24.split(":");
+        let hour = parseInt(hourStr, 10);
+        const minute = minuteStr;
+        const ampm = hour >= 12 ? "PM" : "AM";
+
+        hour = hour % 12 || 12; // Converts 0 -> 12 and 13..23 -> 1..11
+
+        return `${hour}:${minute} ${ampm}`;
+    }
+    const openingHoursActivitityIndicator = () => {
+        return (
+            <ActivityIndicator size='small' color='#3586DB' style={{ marginTop: 10 }} />
+        );
+    }
     return (
         <SafeAreaView style={Style.mainContainer} edges={['left', 'top', 'right']}>
             <StatusBar backgroundColor="#f0f0f0" barStyle="dark-content" />
@@ -198,16 +238,19 @@ const SalonDetail = () => {
                 </View>
                 <View style={Style.section}>
                     <Text style={Style.sectionTitle}>Opening Times</Text>
-                    {salonOpeningHours?.map((openingHours: SalonOpeningHours) => {
+                    {salonOpeningHoursLoading && (
+                        openingHoursActivitityIndicator()
+                    )}
+                    {salonOpeningHours ? salonOpeningHours?.map((openingHours: SalonOpeningHours) => {
                         return (
                             <View key={openingHours.id} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
                                 <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>{openingHours.day_of_week}</Text>
                                 <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>
-                                    {!openingHours.is_closed ? (`${openingHours.open_time} - ${openingHours.close_time}`) : ('Closed')}
+                                    {!openingHours.is_closed ? (`${convert24hTo12h(openingHours.open_time)} - ${convert24hTo12h(openingHours.close_time)}`) : ('Closed')}
                                 </Text>
                             </View>
                         )
-                    })}
+                    }) : !salonOpeningHoursLoading && !salonOpeningHours && (<Text>Unable to find opening hours for this salon!</Text>)}
                 </View>
                 <View style={Style.section}>
                     <Text style={Style.sectionTitle}>Select Services</Text>
@@ -261,7 +304,7 @@ const SalonDetail = () => {
                 </View>
                 <TouchableOpacity
                     style={Style.input}
-                    onPress={() => setShowDatePicker(true)}
+                    onPress={() => setShowDatePicker(!showDatePicker)}
                 >
                     <Text>{selectedDate || 'Pick a date'}</Text>
                 </TouchableOpacity>
@@ -287,21 +330,23 @@ const SalonDetail = () => {
 
                 <TouchableOpacity
                     style={Style.input}
-                    onPress={() => setShowTimePicker(true)}
+                    onPress={() => setShowTimePicker(!showTimePicker)}
                 >
                     <Text>{selectedTime || 'Pick a time'}</Text>
                 </TouchableOpacity>
                 {showTimePicker && (
                     <DateTimePicker
-                        value={selectedTime ? new Date(`1970-01-01T${selectedTime}:00`) : new Date()}
+                        value={parseTimeStringToDate(selectedTime)}
                         mode="time"
                         display="default"
                         minimumDate={
                             getMinimumTime()
                         }
-                        onChange={(event, date) => {
+                        onChange={(event, time) => {
                             setShowTimePicker(false);
-                            if (date) setSelectedTime(date.toTimeString().slice(0, 5));
+                            console.log(time!.toTimeString().slice(0, 5));
+
+                            if (time) setSelectedTime(time.toTimeString().slice(0, 5));
                         }}
                     />
                 )}

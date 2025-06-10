@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     title: {
         alignSelf: 'flex-start',
         marginLeft: 10,
-        fontSize: 30,
+        fontSize: 24,
         paddingBottom: 10,
         //color: '#3586DB',
         fontWeight: 'bold',
