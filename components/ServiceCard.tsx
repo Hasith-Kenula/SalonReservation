@@ -33,7 +33,16 @@ const ServiceCard = ({ service, onEdit, onDelete }: ServiceProps) => {
 }
 
 const styles = StyleSheet.create({
-    serviceCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 8, elevation: 1 },
+    serviceCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        // backgroundColor: '#fff', 
+        backgroundColor: '#E1EAFF',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 8,
+        elevation: 1
+    },
     serviceName: { fontSize: 17, fontWeight: 'bold', color: '#3586DB' },
     serviceDetail: { fontSize: 14, color: '#555' },
     editBtn: { marginLeft: 10, padding: 6 },

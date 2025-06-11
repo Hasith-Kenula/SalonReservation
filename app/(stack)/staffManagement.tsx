@@ -253,7 +253,16 @@ const styles = StyleSheet.create({
     cancelButton: { alignItems: 'center', marginTop: 6 },
     cancelButtonText: { color: '#888', fontSize: 15 },
     sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8, color: '#222' },
-    staffCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 8, elevation: 1 },
+    staffCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E1EAFF',
+        // backgroundColor: '#fff', 
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 8,
+        elevation: 1
+    },
     staffName: { fontSize: 17, fontWeight: 'bold', color: '#3586DB' },
     staffDetail: { fontSize: 14, color: '#555' },
     editBtn: { marginLeft: 10, padding: 6 },

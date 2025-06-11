@@ -147,13 +147,13 @@ const ManageOpeningHours = () => {
                 <Text style={styles.title}>Manage Opening Hours</Text>
             </View>
             {contentLoader && (
-                <ActivityIndicator size="large" color={COLOR.opening} />
+                <ActivityIndicator size="small" color={COLOR.opening} />
             )}
             <ScrollView
                 style={{ paddingHorizontal: 10 }}
                 contentContainerStyle={{ paddingVertical: 10 }}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={() => fetchOpeningHours(true)} />
+                    <RefreshControl tintColor={COLOR.opening} colors={[COLOR.opening]} refreshing={refreshing} onRefresh={() => fetchOpeningHours(true)} />
                 }
             >
                 {openingHours.map((openHour: SalonOpeningHours, index: number) => {
