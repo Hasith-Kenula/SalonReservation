@@ -18,6 +18,7 @@ const Registration = () => {
     const [address, setAddress] = useState('');
     const [ownerName, setOwnerName] = useState('');
     const [email, setEmail] = useState('');
+    const [isEmailValid, setIsEmailValid] = useState(false);
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,6 +30,12 @@ const Registration = () => {
     const [editable, setEditable] = useState(true)
 
     const [otpLoader, setOtpLoader] = useState(false)
+
+    const validateEmail = (email: string) => {
+        setEmail(email);
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        setIsEmailValid(re.test(String(email).toLowerCase()));
+    }
 
     const handleRegister = async () => {
 
@@ -187,10 +194,9 @@ const Registration = () => {
                     <View style={Style.inputContainer}>
                         <Text style={Style.label}>{role == 'Customer' ? 'Name' : 'Salon Name'}</Text>
                         <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your name' : 'Enter your salon name'}
-                            placeholderTextColor="gray"
                             value={name}
                             onChangeText={setName}
-                            style={Style.input} />
+                        />
                     </View>
                     {(role == 'Salon') &&
                         <View style={Style.inputContainer}>
@@ -199,26 +205,27 @@ const Registration = () => {
                                 value={ownerName}
                                 onChangeText={setOwnerName}
                                 placeholderTextColor="gray"
-                                style={Style.input} />
+                            />
                         </View>
                     }
                     <View style={Style.inputContainer}>
                         <Text style={Style.label}>{role == 'Customer' ? 'Email' : 'Salon Email'}</Text>
                         <FocusableTextInput placeholder="example@gmail.com"
-                            placeholderTextColor="gray"
-                            backgroundColor={isEmailVerified && 'rgba(0, 255, 34, 0.24)'}
+                            autoCapitalize='none'
+                            autoComplete='email'
                             value={email}
                             editable={editable}
-                            onChangeText={setEmail}
-                            style={Style.input} />
+                            onChangeText={validateEmail}
+                            style={[isEmailVerified && { backgroundColor: 'rgba(0, 255, 34, 0.24)' }, !isEmailValid && email && Style.emailInputError]} />
+                        {!isEmailValid && email && <Text style={{ color: 'red', fontSize: 12 }}>Please enter a valid email address</Text>}
                     </View>
                     {otpLoader && (
                         <ActivityIndicator size="small" color="#3586DB" />
                     )}
-                    {email && !isEmailVerified && (
+                    {email && !isEmailVerified && isEmailValid && (
                         <View style={[Style.inputContainer]}>
                             <TouchableOpacity style={[Style.button, { width: '100%' }]} onPress={sendOTP}>
-                                <Text style={Style.btnText}>Send OTP</Text>
+                                <Text style={Style.btnText}>Send Verification Code</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -233,16 +240,14 @@ const Registration = () => {
                         <FocusableTextInput placeholder="070 1234567"
                             value={phone}
                             onChangeText={setPhone}
-                            placeholderTextColor="gray"
-                            style={Style.input} />
+                        />
                     </View>
                     <View style={Style.inputContainer}>
                         <Text style={Style.label}>{role == 'Customer' ? 'Address' : 'Salon Address'}</Text>
                         <FocusableTextInput placeholder={role == 'Customer' ? 'Enter your address' : 'Enter salon address'}
-                            placeholderTextColor="gray"
                             value={address}
                             onChangeText={setAddress}
-                            style={Style.input} />
+                        />
                     </View>
                     <View style={Style.inputContainer}>
                         <Text style={Style.label}>Password</Text>
@@ -251,7 +256,7 @@ const Registration = () => {
                             secureTextEntry={!showPassword}
                             value={password}
                             onChangeText={setPassword}
-                            style={[Style.input, { paddingRight: 40 }]}
+                            style={[{ paddingRight: 40 }]}
                         />
                     </View>
                     <View style={Style.inputContainer}>
@@ -261,7 +266,7 @@ const Registration = () => {
                             secureTextEntry={!showPassword}
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
-                            style={[Style.input, { paddingRight: 40 }]}
+                            style={[{ paddingRight: 40 }]}
                         />
                     </View>
                     <View style={Style.inputContainer}>
@@ -319,12 +324,21 @@ const Style = StyleSheet.create({
         fontWeight: 'bold',
         paddingBottom: 5,
     },
-    input: {
+    verifiedEmail: {
+        backgroundColor: 'rgba(0, 255, 34, 0.24)',
+        borderColor: 'rgba(0, 255, 34, 0.24)',
+    },
+    emailInputError: {
+        borderColor: 'red',
         borderWidth: 1,
-        borderColor: 'gray',
         borderRadius: 5,
-        padding: 10,
-        marginVertical: 5,
+        shadowColor: 'red',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
     },
 })
 export default Registration

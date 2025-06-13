@@ -94,20 +94,17 @@ function Login() {
                         <View style={Style.inputContainer}>
                             <Text style={Style.label}>Phone Number</Text>
                             <FocusableTextInput placeholder="ex: 0701234567"
-                                placeholderTextColor="gray"
                                 value={username}
                                 onChangeText={(text) => setUsername(text)}
-                                style={Style.input}
                                 keyboardType="phone-pad" />
                         </View>
                         <View style={Style.inputContainer}>
                             <Text style={Style.label}>Password</Text>
                             <FocusableTextInput placeholder="Enter your password"
-                                placeholderTextColor="gray"
                                 secureTextEntry={!showPassword}
                                 value={password}
                                 onChangeText={(text) => setPassword(text)}
-                                style={Style.input} />
+                            />
                         </View>
                         <TouchableOpacity style={[Style.button]} onPress={() => { handleLogin() }}>
                             <Text style={Style.btnText}>Login as {role}</Text>
@@ -121,7 +118,9 @@ function Login() {
                             </Pressable>
                         </View>
                         <View>
-                            <Text>Forgot Password?</Text>
+                            <Pressable onPress={() => { router.push('/forgotPassword') }}>
+                                <Text style={{ color: '#3586DB', fontWeight: 'bold', textDecorationLine: 'underline' }}>Forgot Password?</Text>
+                            </Pressable>
                         </View>
                     </View>
                 </ScrollView>
@@ -172,7 +171,6 @@ const Style = StyleSheet.create({
         marginTop: 5,
     },
     button: {
-
         height: 50,
         justifyContent: 'center',
         marginTop: 20,

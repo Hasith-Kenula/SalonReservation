@@ -26,6 +26,7 @@ const _layout = () => {
         <SocketProvider customerID={customerID} salonID={salonID} employeeID={employeeID}>
             <Stack initialRouteName='index'>
                 <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="forgotPassword" options={{ headerShown: false }} />
                 <Stack.Screen name="(stack)" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             </Stack>

@@ -1,33 +1,41 @@
-import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import React, { ReactElement, useState } from 'react';
+import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
 
-const FocusableTextInput = (props) => {
+interface FocusableTextInputProps extends TextInputProps {
+    Icon?: ReactElement | null;
+    color?: string;
+}
+
+import { StyleProp, ViewStyle } from 'react-native';
+
+const FocusableTextInput = ({ Icon = null, color = 'black', style, ...props }: FocusableTextInputProps) => {
     const [isFocused, setIsFocused] = useState(false);
 
     return (
-        <View style={[Style.inputWrapper, isFocused && Style.inputWrapperFocused]}>
+        <View style={[Style.inputWrapper, isFocused && Style.inputWrapperFocused, Icon && Style.inputWrapperWithIcon, style as StyleProp<ViewStyle>]}>
             <TextInput
                 {...props}
                 placeholderTextColor="gray"
-                style={Style.input}
+
+                style={[Style.input, Icon && Style.inputWithIcon, color && { color: color }]}
                 onFocus={(e) => {
                     setIsFocused(true);
-                    console.log('onFocus');
                     if (props.onFocus) {
                         props.onFocus(e);
                     }
                 }}
                 onBlur={(e) => {
                     setIsFocused(false);
-                    console.log('onBlur');
                     if (props.onBlur) {
                         props.onBlur(e);
                     }
                 }}
             />
-        </View >
-    )
-}
+            {Icon && <View style={Style.iconContainer}>{Icon}</View>}
+        </View>
+    );
+};
+
 const Style = StyleSheet.create({
     inputWrapper: {
         borderWidth: 1,
@@ -41,6 +49,9 @@ const Style = StyleSheet.create({
         },
         shadowOpacity: 0,
         shadowRadius: 3.84,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingRight: 10,
     },
     inputWrapperFocused: {
         borderColor: '#3586DB',
@@ -53,10 +64,26 @@ const Style = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+    inputWrapperWithIcon: {
+        paddingRight: 40, // space for the icon
+    },
     input: {
         backgroundColor: 'transparent',
         padding: 10,
         height: 50,
+        flex: 1,
     },
-})
-export default FocusableTextInput
+    inputWithIcon: {
+        paddingRight: 10,
+    },
+    iconContainer: {
+        position: 'absolute',
+        right: 10,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 30,
+    },
+});
+
+export default FocusableTextInput;
