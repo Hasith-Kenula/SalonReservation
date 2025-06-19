@@ -1,9 +1,10 @@
 import ConfirmationModal from '@/components/ConfirmationModal';
 import StatusBox from '@/components/StatusBox';
+import { useTheme } from '@/context/ThemeContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Linking, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ColorValue, FlatList, Linking, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSocket } from '../../../socket/socketProvider';
 
@@ -30,15 +31,15 @@ const STATUS_COLORS = {
 
 };
 const THEME_COLOR = '#3586DB';
-const PhoneIcon = () => {
+const PhoneIcon = (color: ColorValue) => {
   return (
-    <Ionicons name="call" size={17} color={THEME_COLOR} />
+    <Ionicons name="call" size={17} color={color} />
   );
 }
 
 const ReservationScreen = () => {
   console.log("Reservation Screen");
-
+  const { theme } = useTheme();
 
   const [reservations, setReservations] = useState<Reservations[]>([]);
   const [loading, setLoading] = useState(true);
@@ -257,8 +258,16 @@ const ReservationScreen = () => {
         {
           text: 'Yes', style: 'destructive', onPress: async () => {
             try {
-              await fetch(`http://192.168.1.2:3000/reservations/${resID}/cancel`, { method: 'PUT' });
-              fetchReservations();
+              await fetch(`http://192.168.1.2:3000/reservations/${resID}/status`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ resStatus: 'cancelled' }),
+              });
+              setReservations(reservations.map(r =>
+                r.resID === resID ? { ...r, resStatus: 'cancelled' } : r
+              ));
             } catch {
               Alert.alert('Error', 'Failed to cancel reservation.');
             }
@@ -285,13 +294,12 @@ const ReservationScreen = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container,]} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.tonal_a0 }]} edges={['top', 'left', 'right']}>
       {statusBox && (
         <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => setStatusBox(null)} />
       )}
       <View style={styles.headings}>
-        <Text style={styles.title}>My Reservations</Text>
+        <Text style={[styles.title, { color: theme.colors.textColor }]}>My Reservations</Text>
       </View>
       <FlatList
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 20 }}
@@ -299,29 +307,29 @@ const ReservationScreen = () => {
         data={reservations}
         keyExtractor={item => item.resID}
         renderItem={({ item }) => (
-          <View style={[styles.card, { borderColor: STATUS_COLORS[item.resStatus], shadowColor: STATUS_COLORS[item.resStatus] }]}>
+          <View style={[styles.card, { borderColor: STATUS_COLORS[item.resStatus], shadowColor: STATUS_COLORS[item.resStatus], backgroundColor: theme.colors.tonal_a10 }]}>
             <View style={styles.cardHeader}>
               {renderStatusBadge(item.resStatus)}
-              <Text style={styles.resID}>#{item.resID}</Text>
+              <Text style={[styles.resID, { color: theme.colors.primary_a30 }]}>#{item.resID}</Text>
             </View>
-            <Text style={styles.salonName}>{item.salonName || 'Unknown'}</Text>
+            <Text style={[styles.salonName, { color: theme.colors.primary_a30 }]}>{item.salonName || 'Unknown'}</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignContent: 'center' }} onPress={() => { Linking.openURL(`tel:${item.salonPhone}`) }}>
-              {PhoneIcon()}
-              <Text style={styles.salonPhone}> {item.salonPhone || 'Unknown'}</Text>
+              {PhoneIcon(theme.colors.primary_a30)}
+              <Text style={[styles.salonPhone, { color: theme.colors.primary_a30 }]}> {item.salonPhone || 'Unknown'}</Text>
             </TouchableOpacity>
-            <Text style={styles.detail}>Date: <Text style={styles.bold}>{item.resDate}</Text></Text>
-            <Text style={styles.detail}>Time: <Text style={styles.bold}>{item.resTime}</Text></Text>
-            <Text style={styles.detail}>Services: <Text style={styles.bold}>{item.reservedServices || 'Unknown'}</Text></Text>
-            <Text style={styles.detail}>Total: <Text style={styles.price}>LKR {item.totalPrice || 'Unknown'}</Text></Text>
-            <View style={styles.actions}>
+            <Text style={[styles.detail, { color: theme.colors.textColor }]}>Date: <Text style={styles.bold}>{item.resDate}</Text></Text>
+            <Text style={[styles.detail, { color: theme.colors.textColor }]}>Time: <Text style={styles.bold}>{item.resTime}</Text></Text>
+            <Text style={[styles.detail, { color: theme.colors.textColor }]}>Services: <Text style={styles.bold}>{item.reservedServices || 'Unknown'}</Text></Text>
+            <Text style={[styles.detail, { color: theme.colors.textColor }]}>Total: <Text style={[styles.bold, { color: theme.colors.primary_a40 }]}>LKR {item.totalPrice || 'Unknown'}</Text></Text>
+            <View style={[styles.actions,]}>
               {(item.resStatus === 'pending' || item.resStatus === 'processing') && (
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => handleCancel(item.resID)}>
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                <TouchableOpacity style={[styles.cancelBtn, { borderColor: theme.colors.primary_a30 }]} onPress={() => handleCancel(item.resID)}>
+                  <Text style={[styles.cancelBtnText, { color: theme.colors.primary_a30 }]}>Cancel</Text>
                 </TouchableOpacity>
               )}
               {item.resStatus === 'pending' && (
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item.resID)}>
-                  <Text style={styles.deleteBtnText}>Delete</Text>
+                  <Text style={[styles.deleteBtnText,]}>Delete</Text>
                 </TouchableOpacity>
               )}
 
@@ -360,7 +368,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginLeft: 10,
     fontSize: 30,
-    color: THEME_COLOR,
     paddingBottom: 10,
     fontWeight: 'bold',
   },
@@ -413,11 +420,6 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: 'bold',
-    color: '#222',
-  },
-  price: {
-    color: THEME_COLOR,
-    fontWeight: 'bold',
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -448,7 +450,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   cancelBtnText: {
-    color: THEME_COLOR,
     fontWeight: 'bold',
     fontSize: 15,
   },

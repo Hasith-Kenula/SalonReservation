@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -21,10 +22,17 @@ type SalonCardProps = {
 const THEME_COLOR = '#3586DB';
 
 const SalonCard = (prop: SalonCardProps) => {
+    const { theme, toggleTheme, isDark } = useTheme(); // Assuming useTheme is defined in your context
     const router = useRouter();
     return (
         <TouchableOpacity
-            style={styles.card}
+            style={[
+                styles.card,
+                {
+                    backgroundColor: theme.colors.tonal_a10,
+                    borderLeftColor: theme.colors.primary_a30,
+                    shadowColor: theme.colors.tonal_a30,
+                }]}
             onPress={() => {
                 router.push({
                     pathname: '/salonDetail',
@@ -41,22 +49,22 @@ const SalonCard = (prop: SalonCardProps) => {
             }}
         >
             <View style={styles.cardHeader}>
-                <Text style={styles.salonName}>{prop.name}</Text>
-                <View style={styles.ratingBadge}>
-                    <Text style={styles.ratingText}>
+                <Text style={[styles.salonName, { color: theme.colors.primary_a30 }]}>{prop.name}</Text>
+                <View style={[styles.ratingBadge, { backgroundColor: theme.colors.tonal_a20 }]}>
+                    <Text style={[styles.ratingText, { color: theme.colors.primary_a40 }]}>
                         {prop.rate !== null ? `★ ${prop.rate}` : 'No Rating'}
                     </Text>
                 </View>
             </View>
-            <Text style={styles.address}>{prop.address}</Text>
-            <Text style={styles.detail}>
-                Services: <Text style={styles.bold}>{prop.services.map((service) => service.service).join(', ')}</Text>
+            <Text style={[styles.address, { color: theme.colors.textColor }]}>{prop.address}</Text>
+            <Text style={[styles.detail, { color: theme.colors.primary_a50 }]}>
+                Services: <Text style={[styles.bold, { color: theme.colors.textColor }]}>{prop.services.map((service) => service.service).join(', ')}</Text>
             </Text>
-            <Text style={styles.detail}>
-                Distance: <Text style={styles.bold}>{prop.distance} KM</Text>
+            <Text style={[styles.detail, { color: theme.colors.primary_a50 }]}>
+                Distance: <Text style={[styles.bold, { color: theme.colors.textColor }]}>{prop.distance} KM</Text>
             </Text>
             <View style={styles.infoRow}>
-                <Text style={styles.priceRange}>Price Range: {prop.priceRange}</Text>
+                <Text style={[styles.priceRange, { color: theme.colors.primary_a40 }]}>Price Range: {prop.priceRange}</Text>
             </View>
         </TouchableOpacity>
     );

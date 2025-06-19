@@ -1,7 +1,9 @@
+import { ThemeProvider } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { SocketProvider } from '../socket/socketProvider';
+
 
 const _layout = () => {
     const [customerID, setCustomerID] = useState<string | null>(null);
@@ -24,12 +26,14 @@ const _layout = () => {
     if (loading) { return null; }
     return (
         <SocketProvider customerID={customerID} salonID={salonID} employeeID={employeeID}>
-            <Stack initialRouteName='index'>
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="forgotPassword" options={{ headerShown: false }} />
-                <Stack.Screen name="(stack)" options={{ headerShown: false }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            </Stack>
+            <ThemeProvider>
+                <Stack initialRouteName='index'>
+                    <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen name="forgotPassword" options={{ headerShown: false }} />
+                    <Stack.Screen name="(stack)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                </Stack>
+            </ThemeProvider>
         </SocketProvider>
     )
 }

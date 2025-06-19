@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -35,28 +36,29 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
     primary: '#2B6EC5',
     secondary: 'gray',
   }
-  function getIcon(name: any, focused: any) {
+  function getIcon(name: any, focused: boolean, color: string) {
     switch (name) {
       case 'home':
-        return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='home' size={focused ? 26 : 24} color={color} />;
       case 'salonHome':
-        return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='home' size={focused ? 26 : 24} color={color} />;
       case 'employeeHome':
-        return <AntDesign name='home' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='home' size={focused ? 26 : 24} color={color} />;
       case 'setting':
-        return <AntDesign name='setting' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='setting' size={focused ? 26 : 24} color={color} />;
       case 'profile':
-        return <AntDesign name='user' size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+        return <AntDesign name='user' size={focused ? 26 : 24} color={color} />;
       case 'reservation':
-        return <MaterialCommunityIcons name="calendar-clock-outline" size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />// return <MaterialIcons name="schedule" size={20} color={focused ? colors.primary : colors.secondary} />
+        return <MaterialCommunityIcons name="calendar-clock-outline" size={focused ? 26 : 24} color={color} />// return <MaterialIcons name="schedule" size={20} color={focused ? colors.primary : colors.secondary} />
       default:
-        return <MaterialIcons name="error" size={focused ? 26 : 24} color={focused ? colors.primary : colors.secondary} />;
+        return <MaterialIcons name="error" size={focused ? 26 : 24} color={color} />;
     }
   }
   const intensity = Platform.OS === 'android' ? 100 : 70
+  const { theme, isDark } = useTheme();
   return (
-    <View style={Styles.wrapper}>
-      <BlurView style={Styles.container} intensity={intensity} tint='light'>
+    <View style={[Styles.wrapper, { backgroundColor: theme.colors.tonal_a10 }]}>
+      <BlurView style={[Styles.container, { borderTopColor: theme.colors.blurViewTopBorder }]} intensity={intensity} tint={isDark ? 'dark' : 'light'}>
         {state.routes.map((route: any, index: any) => {
 
           const { options } = descriptors[route.key];
@@ -101,8 +103,8 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
               onLongPress={onLongPress}
               style={Styles.Item}
             >
-              {getIcon(route.name, isFocused)}
-              <Text style={{ color: isFocused ? colors.primary : colors.secondary, fontSize: isFocused ? 15 : 14, }}
+              {getIcon(route.name, isFocused, isFocused ? theme.colors.tabBarFocused : theme.colors.tabBarUnfocused)}
+              <Text style={{ color: isFocused ? theme.colors.tabBarFocused : theme.colors.tabBarUnfocused, fontSize: isFocused ? 15 : 14, }}
                 numberOfLines={1}>
 
                 {label}

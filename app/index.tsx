@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ export default function Splash() {
 
     console.log('splash screen')
     const [loading, setLoading] = useState(true);
+    const { theme, isDark } = useTheme(); // Assuming useTheme is defined in your context
 
     useEffect(() => {
         const checkLogin = async () => {
@@ -34,7 +36,7 @@ export default function Splash() {
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
             {loading && (
                 <ActivityIndicator size="large" color="#3586DB" />
             )}

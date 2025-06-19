@@ -1,7 +1,8 @@
 
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import React, { useState } from 'react';
@@ -9,9 +10,8 @@ type User = {
 
 }
 const Profile = () => {
-  const navigation = useNavigation();
   const router = useRouter();
-
+  const { theme, isDark } = useTheme();
   const [user, setUser] = useState({
     id: 'Unknown',
     name: 'Unknown',
@@ -57,33 +57,32 @@ const Profile = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, flexDirection: 'column' }}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={{ flex: 1, flexDirection: 'column', backgroundColor: theme.colors.tonal_a0 }}>
       <View style={styles.headings}>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={[styles.title, { color: theme.colors.textColor }]}>Profile</Text>
       </View>
       <View style={styles.container}>
-        <View style={styles.profileSection}>
+        <View style={[styles.profileSection, { backgroundColor: theme.colors.surface_a0 }]}>
           <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          <Text style={styles.userName}>{user.name}</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.label}>{role == 'Customer' ? 'User' : 'Salon'} ID</Text>
-            <Text style={styles.value}>{user.id}</Text>
+          <Text style={[styles.userName, { color: theme.colors.primary_a30 }]}>{user.name}</Text>
+          <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+            <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>{role} ID</Text>
+            <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.id}</Text>
           </View>
           {role == 'Salon' &&
             (
-              <View style={styles.infoBox}>
-                <Text style={styles.label}>Owner Name</Text>
-                <Text style={styles.value}>{user.ownerName}</Text>
+              <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+                <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>Owner Name</Text>
+                <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.ownerName}</Text>
               </View>
             )}
-          <View style={styles.infoBox}>
-            <Text style={styles.label}>Address</Text>
-            <Text style={styles.value}>{user.address}</Text>
+          <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+            <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>Address</Text>
+            <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.address}</Text>
           </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.label}>Phone</Text>
-            <Text style={styles.value}>{user.phone}</Text>
+          <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+            <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>Phone</Text>
+            <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.phone}</Text>
           </View>
         </View>
 
@@ -109,7 +108,6 @@ const Profile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
     paddingHorizontal: 20,
     paddingBottom: 80,
   },
@@ -131,7 +129,6 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     marginVertical: 20,
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
     shadowColor: '#000',

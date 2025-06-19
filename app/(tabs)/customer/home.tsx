@@ -1,8 +1,10 @@
+import { useTheme } from '@/context/ThemeContext';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../../components/FocusableTextInput';
 import SalonCard from '../../../components/SalonCard';
+
 
 type Salon = {
   salonID: string;
@@ -19,11 +21,11 @@ type Service = {
   servicePrice: number;
   durationMinutes: string
 }
-
 const Home = () => {
   const [salons, setSalons] = useState<Salon[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const { theme, toggleTheme, isDark } = useTheme();
 
   // Fetch salons and services from API
   useEffect(() => {
@@ -76,15 +78,16 @@ const Home = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white', height: '100%' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.tonal_a0, height: '100%' }}>
       <View style={Style.headings}>
-        <Text style={Style.title}>Salons</Text>
+        <Text style={[Style.title, { color: theme.colors.textColor }]}>Salons</Text>
       </View>
       <View style={{ paddingTop: 10, paddingHorizontal: 15, flex: 1 }}>
         <FocusableTextInput
           placeholder="Search for salons"
           placeholderTextColor="gray"
         />
+        <Switch onValueChange={toggleTheme} value={isDark} />
         <FlatList
           style={{ marginBottom: 100, paddingTop: 10, }}
           data={salons}
