@@ -4,18 +4,18 @@ import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
 interface FocusableTextInputProps extends TextInputProps {
     Icon?: ReactElement | null;
     color?: string;
+    IconPosition?: 'left' | 'right' | null;
 }
 
 import { StyleProp, ViewStyle } from 'react-native';
 
-const FocusableTextInput = ({ Icon = null, color = 'black', style, ...props }: FocusableTextInputProps) => {
+const FocusableTextInput = ({ Icon = null, IconPosition = 'right', color = 'black', style, ...props }: FocusableTextInputProps) => {
     const [isFocused, setIsFocused] = useState(false);
 
     return (
-        <View style={[Style.inputWrapper, isFocused && Style.inputWrapperFocused, Icon && Style.inputWrapperWithIcon, style as StyleProp<ViewStyle>]}>
+        <View style={[Style.inputWrapper, isFocused && Style.inputWrapperFocused, Icon && Style.inputWrapperWithIcon, style as StyleProp<ViewStyle>, { paddingLeft: IconPosition == 'left' ? 40 : 0, paddingRight: IconPosition == 'left' ? 0 : 40 }]}>
             <TextInput
                 {...props}
-                placeholderTextColor="gray"
 
                 style={[Style.input, Icon && Style.inputWithIcon, color && { color: color }]}
                 onFocus={(e) => {
@@ -31,7 +31,7 @@ const FocusableTextInput = ({ Icon = null, color = 'black', style, ...props }: F
                     }
                 }}
             />
-            {Icon && <View style={Style.iconContainer}>{Icon}</View>}
+            {Icon && <View style={[Style.iconContainer, { left: IconPosition == 'left' ? 10 : 0 }]}>{Icon}</View>}
         </View>
     );
 };

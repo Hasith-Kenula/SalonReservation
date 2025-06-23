@@ -1,9 +1,10 @@
+import { useTheme } from '@/context/ThemeContext';
 import { useSocket } from '@/socket/socketProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -40,6 +41,7 @@ const SalonDetail = () => {
     const [todaysReservedTimes, setTodaysReservedTimes] = useState<TodaysReservedTimes[]>([]);
     const [salonOpeningHours, setSalonOpeningHours] = useState<SalonOpeningHours[] | null>(null);
     const [salonOpeningHoursLoading, setSalonOpeningHoursLoading] = useState(false);
+    const { theme, isDark } = useTheme();
 
     const getCustomerID = async () => {
         const customerJSON = await AsyncStorage.getItem('user');
@@ -125,15 +127,17 @@ const SalonDetail = () => {
         console.log('Selected Services:', selectedServices);
         console.log('Selected Service Length:', selectedServices.length);
         if (!selectedServices.length) {
-            alert('Please select at least one service.');
+            Alert.alert('No Services Selected', 'Please select at least one service to reserve.', [
+                { text: 'OK' }
+            ], { userInterfaceStyle: isDark ? 'dark' : 'light' });
             return;
         }
         if (!selectedDate) {
-            alert('please select a Date');
+            Alert.alert('Alert', 'Please select a date', [{ text: 'OK' }], { userInterfaceStyle: isDark ? 'dark' : 'light' });
             return
         }
         if (!selectedTime) {
-            alert('please select a Time');
+            Alert.alert('Alert', 'Please select a time', [{ text: 'OK' }], { userInterfaceStyle: isDark ? 'dark' : 'light' });
             return
         }
         // reservation/reserve logic here
@@ -222,38 +226,37 @@ const SalonDetail = () => {
         );
     }
     return (
-        <SafeAreaView style={Style.mainContainer} edges={['left', 'top', 'right']}>
-            <StatusBar backgroundColor="#f0f0f0" barStyle="dark-content" />
+        <SafeAreaView style={[Style.mainContainer, { backgroundColor: theme.colors.tonal_a0 }]} edges={['left', 'top', 'right']}>
             <View style={Style.headings}>
-                <Text style={Style.title}>Salon Details</Text>
+                <Text style={[Style.title, { color: theme.colors.textColor }]}>Salon Details</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingBottom: 30, paddingHorizontal: 15 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled'>
-                <View style={Style.salonTitle}>
-                    <Text style={Style.subTitle}>{name}</Text>
-                    <Text style={Style.info}>Owner Name: {ownerName}</Text>
-                    <Text style={Style.info}>Services: {availableServices.map((service: any) => `${service.service}`).join(', ')}</Text>
-                    <Text style={Style.info}>Distance: {distance} KM</Text>
-                    <Text style={Style.info}>Rating: {rate}</Text>
-                    <Text style={Style.info}>Price Range: {priceRange}</Text>
+                <View style={[Style.salonTitle, { backgroundColor: theme.colors.tonal_a10 }]}>
+                    <Text style={[Style.subTitle, { color: theme.colors.primary_a0 }]}>{name}</Text>
+                    <Text style={[Style.info, { color: theme.colors.label }]}>Owner Name: {ownerName}</Text>
+                    <Text style={[Style.info, { color: theme.colors.label }]}>Services: {availableServices.map((service: any) => `${service.service}`).join(', ')}</Text>
+                    <Text style={[Style.info, { color: theme.colors.label }]}>Distance: {distance} KM</Text>
+                    <Text style={[Style.info, { color: theme.colors.label }]}>Rating: {rate}</Text>
+                    <Text style={[Style.info, { color: theme.colors.label }]}>Price Range: {priceRange}</Text>
                 </View>
                 <View style={Style.section}>
-                    <Text style={Style.sectionTitle}>Opening Times</Text>
+                    <Text style={[Style.sectionTitle, { color: theme.colors.textColor }]}>Opening Times</Text>
                     {salonOpeningHoursLoading && (
                         openingHoursActivitityIndicator()
                     )}
                     {salonOpeningHours ? salonOpeningHours?.map((openingHours: SalonOpeningHours) => {
                         return (
                             <View key={openingHours.id} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
-                                <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>{openingHours.day_of_week}</Text>
-                                <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal' }}>
+                                <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal', color: theme.colors.textColor }}>{openingHours.day_of_week}</Text>
+                                <Text style={{ fontWeight: today() == openingHours.day_of_week ? 'bold' : 'normal', color: theme.colors.textColor }}>
                                     {!openingHours.is_closed ? (`${convert24hTo12h(openingHours.open_time)} - ${convert24hTo12h(openingHours.close_time)}`) : ('Closed')}
                                 </Text>
                             </View>
                         )
-                    }) : !salonOpeningHoursLoading && !salonOpeningHours && (<Text>Unable to find opening hours for this salon!</Text>)}
+                    }) : !salonOpeningHoursLoading && !salonOpeningHours && (<Text style={{ color: theme.colors.textColor }}>Unable to find opening hours for this salon!</Text>)}
                 </View>
                 <View style={Style.section}>
-                    <Text style={Style.sectionTitle}>Select Services</Text>
+                    <Text style={[Style.sectionTitle, { color: theme.colors.textColor }]}>Select Services</Text>
                     {availableServices.map((service: any) => {
                         const isSelected = selectedServices.some(
                             (s) => s.serviceID === service.serviceID
@@ -263,17 +266,18 @@ const SalonDetail = () => {
                                 key={service.service}
                                 style={[
                                     Style.serviceItem,
-                                    isSelected && Style.serviceItemSelected,
+                                    { backgroundColor: isSelected ? theme.colors.primary_a0 : theme.colors.tonal_a10 }
                                 ]}
                                 onPress={() => toggleService(service)}
                             >
                                 <Text style={{
-                                    color: isSelected ? '#fff' : '#222',
+                                    color: isSelected ? isDark ? '#fff' : '#fff' : theme.colors.textColor,
+
                                 }}>
                                     {service.service}
                                 </Text>
                                 <Text style={{
-                                    color: isSelected ? '#fff' : '#222',
+                                    color: isSelected ? isDark ? '#fff' : '#fff' : theme.colors.textColor,
                                 }}>
                                     LKR {service.price}
                                 </Text>
@@ -282,38 +286,39 @@ const SalonDetail = () => {
                     })}
                 </View>
                 <View style={Style.section}>
-                    <Text style={Style.sectionTitle}>Today's Reserved Times</Text>
+                    <Text style={[Style.sectionTitle, { color: theme.colors.textColor }]}>Today's Reserved Times</Text>
                     <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={true}>
                         {todaysReservedTimes.length > 0 ? todaysReservedTimes.map((times, index) => {
 
                             return (
                                 <TouchableOpacity
                                     key={times.resID}
-                                    style={Style.timeItem}
+                                    style={[Style.timeItem, { backgroundColor: theme.colors.tonal_a10 }]}
                                 >
-                                    <Text>Start Time : {times.startTime}</Text>
-                                    <Text>End Time : {times.endTime}</Text>
+                                    <Text style={{ color: theme.colors.textColor }}>Start Time : {times.startTime}</Text>
+                                    <Text style={{ color: theme.colors.textColor }}>End Time : {times.endTime}</Text>
 
                                 </TouchableOpacity>
                             )
                         }) : (
-                            <Text>No reserved times found for today</Text>
+                            <Text style={{ color: theme.colors.textColor }}>No reserved times found for today</Text>
                         )}
 
                     </ScrollView>
                 </View>
                 <TouchableOpacity
-                    style={Style.input}
+                    style={[Style.input, { backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a30 }]}
                     onPress={() => setShowDatePicker(!showDatePicker)}
                 >
-                    <Text>{selectedDate || 'Pick a date'}</Text>
+                    <Text style={{ color: theme.colors.textColor }}>{selectedDate || 'Pick a date'}</Text>
                 </TouchableOpacity>
                 {showDatePicker && (
                     <DateTimePicker
                         value={selectedDate ? new Date(selectedDate) : new Date()}
                         mode="date"
                         display="default"
-                        textColor='#3586DB'
+                        // textColor='#3586DB'
+                        themeVariant={isDark ? 'dark' : 'light'}
                         minimumDate={new Date()}
                         onChange={(event, date) => {
                             setShowDatePicker(false);
@@ -329,16 +334,17 @@ const SalonDetail = () => {
                 )}
 
                 <TouchableOpacity
-                    style={Style.input}
+                    style={[Style.input, { backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a30 }]}
                     onPress={() => setShowTimePicker(!showTimePicker)}
                 >
-                    <Text>{selectedTime || 'Pick a time'}</Text>
+                    <Text style={{ color: theme.colors.textColor }}>{selectedTime || 'Pick a time'}</Text>
                 </TouchableOpacity>
                 {showTimePicker && (
                     <DateTimePicker
                         value={parseTimeStringToDate(selectedTime)}
                         mode="time"
                         display="default"
+                        themeVariant={isDark ? 'dark' : 'light'}
                         minimumDate={
                             getMinimumTime()
                         }
@@ -363,7 +369,6 @@ const Style = StyleSheet.create({
     mainContainer: {
         flex: 1,
         backgroundColor: 'white',
-        paddingHorizontal: 10,
     },
     title: {
         alignSelf: 'flex-start',

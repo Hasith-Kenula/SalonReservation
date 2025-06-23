@@ -76,6 +76,7 @@ export const LightTheme = {
     tabBarFocused: "#5d83bc", // Color for focused tab bar items
     tabBarUnfocused: "#b0b0b0", // Color for unfocused tab bar items
     statusBar: "dark-content", // Status bar color for light theme
+    label: "#6c82a8", // Label color for text inputs and other elements
   },
 };
 
@@ -111,6 +112,7 @@ export const DarkTheme = {
     tabBarFocused: "#87ace8", // Color for focused tab bar items
     tabBarUnfocused: "#b0b0b0", // Color for unfocused
     statusBar: "light-content", // Status bar color for dark theme
+    label: "#b1c7f0", // Label color for text inputs and other elements
 
     // Text color for
   },

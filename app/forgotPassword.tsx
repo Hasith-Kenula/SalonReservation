@@ -128,7 +128,6 @@ const ForgotPassword = () => {
         <SafeAreaView style={{ flex: 1, }} edges={['top', 'left', 'right']}>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
                 {statusBox && <StatusBox message={statusBox.message} type={statusBox.type} onHide={() => setStatusBox(null)} />}
-                {/* <StatusBar style="dark" /> */}
                 <View style={Styles.heading}>
                     <Text style={Styles.title}>Change Password</Text>
                 </View>

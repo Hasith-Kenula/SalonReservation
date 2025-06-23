@@ -1,7 +1,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -57,7 +57,6 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, flexDirection: 'column' }}>
-      <StatusBar barStyle="dark-content" />
       <View style={styles.headings}>
         <Text style={styles.title}>Profile</Text>
       </View>

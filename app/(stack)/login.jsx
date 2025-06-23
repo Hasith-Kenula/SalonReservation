@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../components/FocusableTextInput';
 
@@ -69,7 +69,6 @@ function Login() {
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-            <StatusBar barStyle='dark-content' />
             <SafeAreaView style={Style.mainContainer} edges={['top', 'left', 'right']}>
                 <ScrollView contentContainerStyle={{ flex: 1 }} keyboardDismissMode='interactive'>
                     <View style={[Style.title]}>

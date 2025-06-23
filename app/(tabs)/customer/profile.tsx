@@ -62,25 +62,25 @@ const Profile = () => {
         <Text style={[styles.title, { color: theme.colors.textColor }]}>Profile</Text>
       </View>
       <View style={styles.container}>
-        <View style={[styles.profileSection, { backgroundColor: theme.colors.surface_a0 }]}>
+        <View style={[styles.profileSection, { backgroundColor: theme.colors.tonal_a0, shadowColor: isDark ? '#ffffff' : '#000000' }]}>
           <Image source={{ uri: user.avatar }} style={styles.avatar} />
           <Text style={[styles.userName, { color: theme.colors.primary_a30 }]}>{user.name}</Text>
-          <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+          <View style={[styles.infoBox, { backgroundColor: theme.colors.tonal_a10 }]}>
             <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>{role} ID</Text>
             <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.id}</Text>
           </View>
           {role == 'Salon' &&
             (
-              <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+              <View style={[styles.infoBox, { backgroundColor: theme.colors.tonal_a10 }]}>
                 <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>Owner Name</Text>
                 <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.ownerName}</Text>
               </View>
             )}
-          <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+          <View style={[styles.infoBox, { backgroundColor: theme.colors.tonal_a10 }]}>
             <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>Address</Text>
             <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.address}</Text>
           </View>
-          <View style={[styles.infoBox, { backgroundColor: theme.colors.surface_a10 }]}>
+          <View style={[styles.infoBox, { backgroundColor: theme.colors.tonal_a10 }]}>
             <Text style={[styles.label, { color: theme.colors.primary_a50 }]}>Phone</Text>
             <Text style={[styles.value, { color: theme.colors.textColor }]}>{user.phone}</Text>
           </View>
@@ -131,7 +131,6 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     borderRadius: 16,
     padding: 24,
-    shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,

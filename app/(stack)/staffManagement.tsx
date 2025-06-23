@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -20,6 +21,7 @@ const StaffManagement = () => {
     const [salonID, setSalonID] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const { theme } = useTheme();
 
     // Fetch staff from API
     useEffect(() => {
@@ -130,24 +132,39 @@ const StaffManagement = () => {
             }
         ]);
     };
+    const STYLE = {
+        background: theme.colors.tonal_a0,
+        textColor: theme.colors.textColor,
+
+        InputContainer: {
+            background: theme.colors.tonal_a10
+        },
+        StaffCard: {
+            background: theme.colors.tonal_a10,
+            title: theme.colors.primary_a0,
+            text: theme.colors.primary_a50,
+
+        }
+
+    }
 
     return (
-        <SafeAreaView style={{ height: '100%' }}>
+        <SafeAreaView style={{ height: '100%', backgroundColor: STYLE.background }}>
             <View style={styles.heading}>
-                <Text style={styles.title}>Staff Management</Text>
+                <Text style={[styles.title, { color: STYLE.textColor }]}>Staff Management</Text>
             </View>
             <View style={styles.container}>
-                <View style={styles.form}>
+                <View style={[styles.form, { backgroundColor: STYLE.InputContainer.background }]}>
                     {isEditing && (
                         <TextInput
-                            style={[styles.input, { color: 'gray' }]}
+                            style={[styles.input, { color: STYLE.textColor }]}
                             placeholderTextColor='gray'
                             value={`StaffID: ${employeeID}`}
                             editable={false}
                         />
                     )}
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: STYLE.textColor }]}
                         placeholder="Employee Name"
                         placeholderTextColor='gray'
                         value={fullName}
@@ -155,7 +172,7 @@ const StaffManagement = () => {
                         keyboardType='default'
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: STYLE.textColor }]}
                         placeholder="Phone"
                         placeholderTextColor='gray'
                         value={phone}
@@ -163,7 +180,7 @@ const StaffManagement = () => {
                         keyboardType="phone-pad"
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: STYLE.textColor }]}
                         placeholder="password"
                         placeholderTextColor='gray'
                         value={password}
@@ -190,7 +207,7 @@ const StaffManagement = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-                <Text style={styles.sectionTitle}>Staff Members</Text>
+                <Text style={[styles.sectionTitle, { color: STYLE.textColor }]}>Staff Members</Text>
                 {loading && (
                     <View style={styles.center}>
                         <ActivityIndicator size="large" color={THEME_COLOR} />
@@ -201,11 +218,11 @@ const StaffManagement = () => {
                         data={employeeList}
                         keyExtractor={item => item.employeeID}
                         renderItem={({ item }) => (
-                            <View style={styles.staffCard}>
+                            <View style={[styles.staffCard, { backgroundColor: STYLE.StaffCard.background }]}>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={styles.staffName}>{item.fullName}</Text>
-                                    <Text style={styles.staffDetail}>password: {item.password}</Text>
-                                    <Text style={styles.staffDetail}>Phone: {item.phone}</Text>
+                                    <Text style={[styles.staffName, { color: STYLE.StaffCard.title, marginBottom: 5 }]}>{item.fullName}</Text>
+                                    <Text style={[styles.staffDetail, { color: STYLE.StaffCard.text }]}>password: {item.password}</Text>
+                                    <Text style={[styles.staffDetail, { color: STYLE.StaffCard.text }]}>Phone: {item.phone}</Text>
                                 </View>
                                 <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
                                     <Text style={{ color: '#3586DB', fontWeight: 'bold' }}>Edit</Text>
@@ -215,7 +232,7 @@ const StaffManagement = () => {
                                 </TouchableOpacity>
                             </View>
                         )}
-                        ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No staff members added yet.</Text>}
+                        ListEmptyComponent={<Text style={{ color: theme.colors.tonal_a50, textAlign: 'center' }}>No staff members added yet.</Text>}
                     />
                 )}
             </View>
@@ -224,7 +241,7 @@ const StaffManagement = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f9f9f9', padding: 15 },
+    container: { flex: 1, padding: 15 },
     title: {
         color: THEME_COLOR,
         alignSelf: 'flex-start',

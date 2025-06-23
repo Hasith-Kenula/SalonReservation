@@ -1,6 +1,7 @@
 import { useTheme } from '@/context/ThemeContext';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, ColorValue, FlatList, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../../components/FocusableTextInput';
 import SalonCard from '../../../components/SalonCard';
@@ -20,6 +21,11 @@ type Service = {
   serviceName: string;
   servicePrice: number;
   durationMinutes: string
+}
+const SearchIcon = (color: ColorValue) => {
+  return (
+    <Ionicons name="search" size={24} color={color} />
+  );
 }
 const Home = () => {
   const [salons, setSalons] = useState<Salon[]>([]);
@@ -85,7 +91,11 @@ const Home = () => {
       <View style={{ paddingTop: 10, paddingHorizontal: 15, flex: 1 }}>
         <FocusableTextInput
           placeholder="Search for salons"
-          placeholderTextColor="gray"
+          placeholderTextColor={theme.colors.tonal_a50}
+          color={theme.colors.textColor}
+          Icon={SearchIcon(theme.colors.tonal_a50)}
+          style={{ height: 40, borderWidth: 0, backgroundColor: theme.colors.tonal_a10, borderRadius: 15, shadowColor: 'transparent' }}
+          IconPosition={'left'}
         />
         <Switch onValueChange={toggleTheme} value={isDark} />
         <FlatList

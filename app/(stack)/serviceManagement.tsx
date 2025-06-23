@@ -1,4 +1,5 @@
 import ServiceCard from '@/components/ServiceCard';
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -28,6 +29,7 @@ const ServiceManagement = () => {
     const [salonID, setSalonID] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const { theme } = useTheme();
 
     //fetch initial service data from API
     useEffect(() => {
@@ -168,31 +170,41 @@ const ServiceManagement = () => {
     //         </View>
     //     );
     // }
+    const STYLE = {
+        background: theme.colors.tonal_a0,
+        textColor: theme.colors.textColor,
+
+        InputContainer: {
+            background: theme.colors.tonal_a10
+        }
+
+    }
     return (
-        <SafeAreaView style={{ height: '100%' }}>
+        <SafeAreaView style={{ height: '100%', backgroundColor: STYLE.background }}>
             <View style={styles.heading}>
-                <Text style={styles.title}>Service Management</Text>
+                <Text style={[styles.title, { color: STYLE.textColor }]}>Service Management</Text>
             </View>
-            <View style={styles.container}>
-                <View style={styles.form}>
+            <View style={[styles.container]}>
+                <View style={[styles.form, { backgroundColor: STYLE.InputContainer.background }]}>
                     {isEditing && (
                         <TextInput
-                            style={[styles.input, { color: 'gray' }]}
+                            style={[styles.input, { color: STYLE.textColor }]}
                             placeholderTextColor='gray'
                             value={`ServiceID: ${serviceID}`}
                             readOnly
                         />
                     )}
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: STYLE.textColor }]}
                         placeholder="Service Name"
                         placeholderTextColor='gray'
+
                         value={serviceName.toString()}
                         onChangeText={setServiceName}
                         keyboardType='default'
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: STYLE.textColor }]}
                         placeholder="Price (LKR)"
                         placeholderTextColor='gray'
                         value={servicePrice.toString()}
@@ -200,7 +212,7 @@ const ServiceManagement = () => {
                         keyboardType="numeric"
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: STYLE.textColor }]}
                         placeholder="Duration (minutes)"
                         placeholderTextColor='gray'
                         value={durationMinutes.toString()}
@@ -228,7 +240,7 @@ const ServiceManagement = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-                <Text style={styles.sectionTitle}>Services</Text>
+                <Text style={[styles.sectionTitle, { color: STYLE.textColor }]}>Services</Text>
                 {loading && (
                     <View style={styles.center}>
                         <ActivityIndicator size="large" color={THEME_COLOR} />
@@ -245,7 +257,7 @@ const ServiceManagement = () => {
                                 onDelete={handleDelete}
                             />
                         )}
-                        ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No services added yet.</Text>}
+                        ListEmptyComponent={<Text style={{ color: theme.colors.tonal_a50, textAlign: 'center' }}>No services added yet.</Text>}
                     />
                 )}
             </View>
@@ -255,7 +267,7 @@ const ServiceManagement = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f9f9f9', padding: 15 },
+    container: { flex: 1, padding: 15 },
     title: {
         alignSelf: 'flex-start',
         marginLeft: 10,

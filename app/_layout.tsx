@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@/context/ThemeContext';
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,7 @@ const _layout = () => {
     const [salonID, setSalonID] = useState<string | null>(null);
     const [employeeID, setEmployeeID] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const { isDark } = useTheme();
 
     useEffect(() => {
         const loadIDs = async () => {
@@ -27,6 +28,8 @@ const _layout = () => {
     return (
         <SocketProvider customerID={customerID} salonID={salonID} employeeID={employeeID}>
             <ThemeProvider>
+
+
                 <Stack initialRouteName='index'>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
                     <Stack.Screen name="forgotPassword" options={{ headerShown: false }} />

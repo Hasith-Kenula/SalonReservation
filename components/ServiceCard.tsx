@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 type Service = {
@@ -15,12 +16,19 @@ type ServiceProps = {
 }
 
 const ServiceCard = ({ service, onEdit, onDelete }: ServiceProps) => {
+    const { theme } = useTheme();
+
+    const STYLE = {
+        background: theme.colors.tonal_a10,
+        title: theme.colors.primary_a0,
+        text: theme.colors.primary_a50,
+    }
     return (
-        <View style={styles.serviceCard}>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.serviceName}>{service.serviceName}</Text>
-                <Text style={styles.serviceDetail}>Price: LKR {Number(service.servicePrice)}</Text>
-                <Text style={styles.serviceDetail}>Duration: {service.durationMinutes} min</Text>
+        <View style={[styles.serviceCard, { backgroundColor: STYLE.background }]}>
+            <View style={{ flex: 1, }}>
+                <Text style={[styles.serviceName, { color: STYLE.title, marginBottom: 5 }]}>{service.serviceName}</Text>
+                <Text style={[styles.serviceDetail, { color: STYLE.text }]}>Price: LKR {Number(service.servicePrice)}</Text>
+                <Text style={[styles.serviceDetail, { color: STYLE.text }]}>Duration: {service.durationMinutes} min</Text>
             </View>
             <TouchableOpacity onPress={() => onEdit(service)} style={styles.editBtn}>
                 <Text style={{ color: '#3586DB', fontWeight: 'bold' }}>Edit</Text>

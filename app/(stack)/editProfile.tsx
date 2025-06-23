@@ -1,6 +1,7 @@
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../components/FocusableTextInput';
 
@@ -14,6 +15,7 @@ const EditProfile = () => {
     const [salonID, setSalonID] = useState('');
     const [customerID, setCustomerID] = useState('');
     const [ownerName, setOwnerName] = useState('');
+    const { theme, isDark } = useTheme();
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -105,71 +107,90 @@ const EditProfile = () => {
             console.log(error)
         }
     }
+
     return (
-        <SafeAreaView style={{ marginHorizontal: 10, height: '100%' }}>
-            <View style={Style.headings}>
-                <Text style={Style.title}>Edit</Text>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps='handled'>
-                <Text style={[Style.subTitle]}>{role == 'Customer' ? 'User' : 'Salon'} Profile</Text>
-                <View style={Style.inputContainer}>
-                    <Text style={Style.label}>{role == 'Customer' ? 'Full' : 'Salon'} Name</Text>
-                    <FocusableTextInput placeholder="Enter your name"
-                        value={name}
-                        onChangeText={(text) => setName(text)}
-                    />
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} enabled>
+            <SafeAreaView style={{ height: '100%', backgroundColor: theme.colors.tonal_a0 }}>
+                <View style={Style.headings}>
+                    <Text style={[Style.title, { color: theme.colors.textColor }]}>Edit</Text>
                 </View>
-                {/* <View style={Style.inputContainer}>
+                <ScrollView showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 10 }}
+                    keyboardShouldPersistTaps='handled'>
+                    <Text style={[Style.subTitle, { color: theme.colors.textColor }]}>{role == 'Customer' ? 'User' : 'Salon'} Profile</Text>
+                    <View style={Style.inputContainer}>
+                        <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>{role == 'Customer' ? 'Full' : 'Salon'} Name</Text>
+                        <FocusableTextInput placeholder="Enter your name"
+                            placeholderTextColor={theme.colors.tonal_a50}
+                            value={name}
+                            color={theme.colors.textColor}
+                            style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
+                            onChangeText={(text) => setName(text)}
+                        />
+                    </View>
+                    {/* <View style={Style.inputContainer}>
                     <Text style={Style.label}>Email</Text>
                     <FocusableTextInput placeholder="Enter your email"
                         value
                         onChangeText={(text) => { }}
                     />
                 </View> */}
-                {role == 'Salon' && (
+                    {role == 'Salon' && (
+                        <View style={Style.inputContainer}>
+                            <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Owner Name</Text>
+                            <FocusableTextInput placeholder="Owner Name"
+                                value={ownerName}
+                                color={theme.colors.textColor}
+                                style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
+                                onChangeText={(text) => { setOwnerName(text) }}
+                            />
+                        </View>
+                    )}
                     <View style={Style.inputContainer}>
-                        <Text style={Style.label}>Owner Name</Text>
-                        <FocusableTextInput placeholder="Owner Name"
-                            value={ownerName}
-                            onChangeText={(text) => { setOwnerName(text) }}
+                        <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Phone Number</Text>
+                        <FocusableTextInput
+                            placeholder="Enter phone number"
+                            value={phone}
+                            color={theme.colors.textColor}
+                            style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
+                            onChangeText={(text) => { setPhone(text) }}
                         />
                     </View>
-                )}
-                <View style={Style.inputContainer}>
-                    <Text style={Style.label}>Phone Number</Text>
-                    <FocusableTextInput placeholder="Enter phone number" value={phone} onChangeText={(text) => { setPhone(text) }}
-                    />
-                </View>
-                <View style={Style.inputContainer}>
-                    <Text style={Style.label}>Location</Text>
-                    <FocusableTextInput placeholder="Enter your location" value={address} onChangeText={(text) => { setAddress(text) }}
-                    />
-                </View>
+                    <View style={Style.inputContainer}>
+                        <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Location</Text>
+                        <FocusableTextInput placeholder="Enter your location" value={address} color={theme.colors.textColor}
+                            style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }} onChangeText={(text) => { setAddress(text) }}
+                        />
+                    </View>
 
-                <View style={Style.passowrdContainer}>
-                    <Text style={{ fontSize: 23, marginBottom: 10, fontWeight: '500' }}>Change Password</Text>
-                    <View style={Style.inputContainer}>
-                        <Text style={Style.label}>Current Password</Text>
-                        <FocusableTextInput placeholder="Enter your current password"
-                        />
+                    <View style={Style.passowrdContainer}>
+                        <Text style={{ fontSize: 23, marginBottom: 10, fontWeight: '500', color: theme.colors.textColor }}>Change Password</Text>
+                        <View style={Style.inputContainer}>
+                            <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Current Password</Text>
+                            <FocusableTextInput placeholder="Enter your current password" color={theme.colors.textColor}
+                                style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
+                            />
+                        </View>
+                        <View style={Style.inputContainer}>
+                            <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>New Password</Text>
+                            <FocusableTextInput placeholder="Enter your new password" color={theme.colors.textColor}
+                                style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
+                            />
+                        </View>
+                        <View style={Style.inputContainer}>
+                            <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Confirm New Password</Text>
+                            <FocusableTextInput placeholder="Confirm your new password" color={theme.colors.textColor}
+                                style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
+                            />
+                        </View>
                     </View>
-                    <View style={Style.inputContainer}>
-                        <Text style={Style.label}>New Password</Text>
-                        <FocusableTextInput placeholder="Enter your new password"
-                        />
-                    </View>
-                    <View style={Style.inputContainer}>
-                        <Text style={Style.label}>Confirm New Password</Text>
-                        <FocusableTextInput placeholder="Confirm your new password"
-                        />
-                    </View>
-                </View>
-                <TouchableOpacity style={[Style.button, { padding: 5 }]} onPress={() => { handleSave() }}>
-                    <Text style={Style.btnText}>Save Changes</Text>
-                </TouchableOpacity>
-            </ScrollView>
-        </SafeAreaView>
+                    <TouchableOpacity style={[Style.button, { padding: 5 }]} onPress={() => { handleSave() }}>
+                        <Text style={Style.btnText}>Save Changes</Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </SafeAreaView>
+
+        </KeyboardAvoidingView>
     )
 }
 const Style = StyleSheet.create({
@@ -192,6 +213,8 @@ const Style = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'center',
+        borderBottomColor: 'rgba(131, 131, 131, 0.51)',
+        borderBottomWidth: 1,
     },
     inputContainer: {
         marginBottom: 10,

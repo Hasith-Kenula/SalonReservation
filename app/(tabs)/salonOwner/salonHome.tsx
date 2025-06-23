@@ -1,7 +1,8 @@
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSocket } from '../../../socket/socketProvider';
 
@@ -48,6 +49,7 @@ const SalonHome = () => {
     const [processingReservations, setProcessingReservations] = useState<Reservation[]>([]);
     const [completedReservations, setCompletedReservations] = useState<Reservation[]>([]);
     const [tabBtnState, setTabBtnState] = useState<'pending' | 'processing' | 'completed'>('pending');
+    const { theme, toggleTheme, isDark } = useTheme();
 
     const [salonID, setSalonID] = useState('');
     const socket = useSocket();
@@ -128,27 +130,49 @@ const SalonHome = () => {
         setTabBtnState('completed');
     }
     // You can fetch real stats and reservations here
+    const STYLE = {
+        background: theme.colors.tonal_a0,
+        textColor: theme.colors.textColor,
+        StatBoxStyle: {
+            background: theme.colors.tonal_a10,
+            label: theme.colors.primary_a50,
+            value: theme.colors.primary_a10,
+
+        },
+        ReservationCard: {
+            background: theme.colors.tonal_a10,
+            borderLeftColor: theme.colors.primary_a30,
+            shadow: theme.colors.tonal_a30,
+
+            title: theme.colors.primary_a30,
+            label: theme.colors.primary_a50,
+            value: theme.colors.textColor,
+            priceValue: theme.colors.primary_a40,
+
+        },
+
+    }
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
-            <StatusBar barStyle="dark-content" />
+        <SafeAreaView style={[styles.container, { backgroundColor: STYLE.background }]} edges={['top', 'right', 'left']}>
             {/* Header */}
             <View style={styles.headings}>
-                <Text style={styles.title}>Dashboard</Text>
+                <Text style={[styles.title, { color: STYLE.textColor }]}>Dashboard</Text>
             </View>
             {/* Stats */}
             <View style={{ paddingHorizontal: 10 }}>
+                <Switch value={isDark} onChange={toggleTheme} />
                 <View style={styles.statsRow}>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>Today's Reservations</Text>
-                        <Text style={styles.statNumber}>{stats?.todaysReservations || 0}</Text>
+                    <View style={[styles.statBox, { backgroundColor: STYLE.StatBoxStyle.background }]}>
+                        <Text style={[styles.statLabel, { color: STYLE.StatBoxStyle.label }]}>Today's Reservations</Text>
+                        <Text style={[styles.statNumber, { color: STYLE.StatBoxStyle.value }]}>{stats?.todaysReservations || 0}</Text>
                     </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>Today's Revenue</Text>
-                        <Text style={styles.statNumber}>LKR {stats?.totalRevenue || 0}</Text>
+                    <View style={[styles.statBox, { backgroundColor: STYLE.StatBoxStyle.background }]}>
+                        <Text style={[styles.statLabel, { color: STYLE.StatBoxStyle.label }]}>Today's Revenue</Text>
+                        <Text style={[styles.statNumber, { color: STYLE.StatBoxStyle.value }]}>LKR {stats?.totalRevenue || 0}</Text>
                     </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>Pending Reservations</Text>
-                        <Text style={styles.statNumber}>{stats?.pending || 0}</Text>
+                    <View style={[styles.statBox, { backgroundColor: STYLE.StatBoxStyle.background }]}>
+                        <Text style={[styles.statLabel, { color: STYLE.StatBoxStyle.label }]}>Pending Reservations</Text>
+                        <Text style={[styles.statNumber, { color: STYLE.StatBoxStyle.value }]}>{stats?.pending || 0}</Text>
                     </View>
                 </View>
 
@@ -177,25 +201,25 @@ const SalonHome = () => {
                         <Text style={[styles.tabBtnText, tabBtnState === 'completed' ? styles.tabBtnTextActive : styles.tabBtnTextInActive]}>Completed</Text>
                     </TouchableOpacity>
                 </View>
-                <Text style={styles.sectionTitle}>{tabBtnState.charAt(0).toUpperCase() + tabBtnState.slice(1)} Reservations</Text>
+                <Text style={[styles.sectionTitle, { color: STYLE.textColor }]}>{tabBtnState.charAt(0).toUpperCase() + tabBtnState.slice(1)} Reservations</Text>
             </View>
             <FlatList
                 data={tabBtnState === 'pending' ? pendingReservations : tabBtnState === 'processing' ? processingReservations : completedReservations}
                 contentContainerStyle={{ paddingTop: 20, paddingBottom: 60, paddingHorizontal: 10 }}
                 keyExtractor={item => item.resID}
                 renderItem={({ item }) => (
-                    <View style={styles.reservationCard}>
-                        <Text style={[styles.resID,]}>#{item.resID}</Text>
-                        <Text style={styles.detail}>Phone: <Text style={styles.bold}>{item.customerPhone}</Text></Text>
-                        <Text style={styles.detail}>Customer: <Text style={styles.bold}>{item.customerName}</Text></Text>
-                        <Text style={styles.detail}>Date: <Text style={styles.bold}>{item.resDate}</Text></Text>
-                        <Text style={styles.detail}>Time: <Text style={styles.bold}>{item.resTime}</Text></Text>
-                        <Text style={styles.detail}>Services: <Text style={styles.bold}>{item.reservedServices}</Text></Text>
-                        <Text style={[styles.detail,]}>Total: <Text style={[styles.price,]}>LKR {item.totalPrice}</Text></Text>
+                    <View style={[styles.reservationCard, { backgroundColor: STYLE.ReservationCard.background }]}>
+                        <Text style={[styles.resID, { color: STYLE.ReservationCard.title }]}>#{item.resID}</Text>
+                        <Text style={[styles.detail, { color: STYLE.ReservationCard.label }]}>Phone: <Text style={[styles.bold, { color: STYLE.ReservationCard.value }]}>{item.customerPhone}</Text></Text>
+                        <Text style={[styles.detail, { color: STYLE.ReservationCard.label }]}>Customer: <Text style={[styles.bold, { color: STYLE.ReservationCard.value }]}>{item.customerName}</Text></Text>
+                        <Text style={[styles.detail, { color: STYLE.ReservationCard.label }]}>Date: <Text style={[styles.bold, { color: STYLE.ReservationCard.value }]}>{item.resDate}</Text></Text>
+                        <Text style={[styles.detail, { color: STYLE.ReservationCard.label }]}>Time: <Text style={[styles.bold, { color: STYLE.ReservationCard.value }]}>{item.resTime}</Text></Text>
+                        <Text style={[styles.detail, { color: STYLE.ReservationCard.label }]}>Services: <Text style={[styles.bold, { color: STYLE.ReservationCard.value }]}>{item.reservedServices}</Text></Text>
+                        <Text style={[styles.detail, { color: STYLE.ReservationCard.priceValue, fontWeight: 'bold', marginTop: 5 }]}>Total: <Text style={[]}>LKR {item.totalPrice}</Text></Text>
                     </View>
                 )}
                 style={{ marginBottom: 10 }}
-                ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No {tabBtnState} reservations for today.</Text>}
+                ListEmptyComponent={<Text style={{ color: theme.colors.tonal_a50, textAlign: 'center' }}>No {tabBtnState} reservations for today.</Text>}
             />
         </SafeAreaView>
     );
@@ -243,7 +267,7 @@ const styles = StyleSheet.create({
         elevation: 2
     },
     statNumber: { fontSize: 20, fontWeight: 'bold', color: '#3586DB' },
-    statLabel: { fontSize: 13, color: '#888', marginTop: 2 },
+    statLabel: { fontSize: 13, color: '#888', marginTop: 2, fontWeight: 'bold' },
     quickActions: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 },
     actionButton: {
         backgroundColor: '#3586DB',
@@ -281,7 +305,7 @@ const styles = StyleSheet.create({
     resID: { fontWeight: 'bold', color: THEME_COLOR, fontSize: 16, marginBottom: 4 },
     detail: { fontSize: 15, color: '#222', marginBottom: 2 },
     bold: { fontWeight: 'bold', color: '#222' },
-    price: { color: THEME_COLOR, fontWeight: 'bold' },
+    price: { fontWeight: 'bold' },
     resTime: { fontWeight: 'bold', color: '#3586DB' },
     resCustomer: { fontSize: 16, color: '#222' },
     resService: { fontSize: 14, color: '#888' },
