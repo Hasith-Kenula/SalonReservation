@@ -1,4 +1,5 @@
 import StatusBox from '@/components/StatusBox';
+import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -36,6 +37,7 @@ const ManageOpeningHours = () => {
     const [statusBox, setStatusBox] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     // Track which picker is shown: { index: number, type: 'open' | 'close' } or null
     const [showTimePicker, setShowTimePicker] = useState<{ index: number; type: 'open' | 'close' } | null>(null);
+    const { theme, isDark } = useTheme();
 
     const fetchOpeningHours = async (isRefresh = false) => {
         try {
@@ -139,12 +141,21 @@ const ManageOpeningHours = () => {
             />
         );
     }, [statusBox]);
-
+    const STYLE = {
+        // some styles here
+        textColor: theme.colors.textColor,
+        background: theme.colors.tonal_a0,
+        Card: {
+            background: theme.colors.tonal_a10,
+            label: theme.colors.primary_a50,
+            shadow: theme.colors.tonal_a30,
+        }
+    };
     return (
-        <SafeAreaView style={styles.container} edges={['left', 'top', 'right']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: STYLE.background }]} edges={['left', 'top', 'right']}>
             {statusBoxElement}
             <View style={styles.headings}>
-                <Text style={styles.title}>Manage Opening Hours</Text>
+                <Text style={[styles.title, { color: STYLE.textColor }]}>Manage Opening Hours</Text>
             </View>
             {contentLoader && (
                 <ActivityIndicator size="small" color={COLOR.opening} />
@@ -158,10 +169,10 @@ const ManageOpeningHours = () => {
             >
                 {openingHours.map((openHour: SalonOpeningHours, index: number) => {
                     return (
-                        <View key={openHour.id} style={[styles.card, { borderBottomColor: openHour.is_closed ? COLOR.closed : COLOR.opening }]}>
+                        <View key={openHour.id} style={[styles.card, { borderBottomColor: openHour.is_closed ? COLOR.closed : COLOR.opening, backgroundColor: STYLE.Card.background, shadowColor: STYLE.Card.shadow }]}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View>
-                                    <Text style={{ fontWeight: 'bold', fontSize: 20 }}>{openHour.day_of_week}</Text>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 20, color: STYLE.textColor }}>{openHour.day_of_week}</Text>
                                     <Text style={{ fontWeight: 600, color: openHour.is_closed ? COLOR.closed : COLOR.opening }}>{openHour.is_closed ? "Closed" : "Opening"}</Text>
                                 </View>
                                 <View>
@@ -182,10 +193,11 @@ const ManageOpeningHours = () => {
                                 paddingVertical: 10
                             }}>
                                 <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <Text style={[styles.label,]}>Open Time</Text>
+                                    <Text style={[styles.label, { color: STYLE.Card.label }]}>Open Time</Text>
                                     <DateTimePicker
                                         mode="time"
                                         display="default"
+                                        themeVariant={isDark ? 'dark' : 'light'}
                                         value={parseTimeStringToDate(openHour.open_time || '00:00:00')}
                                         maximumDate={parseTimeStringToDate(openHour.close_time || '23:59:59')}
                                         onChange={(event, time) => {
@@ -199,11 +211,12 @@ const ManageOpeningHours = () => {
                                     />
                                 </View>
                                 <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <Text style={[styles.label,]}>Close Time</Text>
+                                    <Text style={[styles.label, { color: STYLE.Card.label }]}>Close Time</Text>
 
                                     <DateTimePicker
                                         mode="time"
                                         display="default"
+                                        themeVariant={isDark ? 'dark' : 'light'}
                                         value={parseTimeStringToDate(openHour.close_time || '00:00:00')}
                                         minimumDate={parseTimeStringToDate(openHour.open_time || '00:00:00')}
                                         onChange={(event, time) => {
@@ -240,7 +253,7 @@ const styles = StyleSheet.create({
         flex: 1,
         // backgroundColor: '#f0f4f8', // softer background color for better contrast
         // backgroundColor: '#ffffff',
-        backgroundColor: '#f9f9f9',
+        // backgroundColor: '#f9f9f9',
     },
     title: {
         alignSelf: 'flex-start',
@@ -258,7 +271,7 @@ const styles = StyleSheet.create({
     card: {
         // backgroundColor: '#ffffff',
         // backgroundColor: '#f0f4f8',
-        backgroundColor: '#E1EAFF',
+        // backgroundColor: '#E1EAFF',
         borderRadius: 12,
         marginBottom: 20,
         padding: 15,
@@ -271,7 +284,7 @@ const styles = StyleSheet.create({
     label: {
         fontWeight: '600',
         fontSize: 14,
-        color: '#34495e',
+        // color: '#34495e',
         marginBottom: 6,
     },
     saveBtn: {

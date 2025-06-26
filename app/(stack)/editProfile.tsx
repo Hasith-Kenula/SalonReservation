@@ -110,7 +110,7 @@ const EditProfile = () => {
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} enabled>
-            <SafeAreaView style={{ height: '100%', backgroundColor: theme.colors.tonal_a0 }}>
+            <SafeAreaView style={{ height: '100%', backgroundColor: theme.colors.tonal_a0 }} edges={['left', 'top', 'right']}>
                 <View style={Style.headings}>
                     <Text style={[Style.title, { color: theme.colors.textColor }]}>Edit</Text>
                 </View>
@@ -139,6 +139,8 @@ const EditProfile = () => {
                         <View style={Style.inputContainer}>
                             <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Owner Name</Text>
                             <FocusableTextInput placeholder="Owner Name"
+                                placeholderTextColor={theme.colors.tonal_a50}
+
                                 value={ownerName}
                                 color={theme.colors.textColor}
                                 style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
@@ -150,6 +152,8 @@ const EditProfile = () => {
                         <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Phone Number</Text>
                         <FocusableTextInput
                             placeholder="Enter phone number"
+                            placeholderTextColor={theme.colors.tonal_a50}
+
                             value={phone}
                             color={theme.colors.textColor}
                             style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
@@ -158,7 +162,9 @@ const EditProfile = () => {
                     </View>
                     <View style={Style.inputContainer}>
                         <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Location</Text>
-                        <FocusableTextInput placeholder="Enter your location" value={address} color={theme.colors.textColor}
+                        <FocusableTextInput placeholder="Enter your location"
+                            placeholderTextColor={theme.colors.tonal_a50}
+                            value={address} color={theme.colors.textColor}
                             style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }} onChangeText={(text) => { setAddress(text) }}
                         />
                     </View>
@@ -167,19 +173,25 @@ const EditProfile = () => {
                         <Text style={{ fontSize: 23, marginBottom: 10, fontWeight: '500', color: theme.colors.textColor }}>Change Password</Text>
                         <View style={Style.inputContainer}>
                             <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Current Password</Text>
-                            <FocusableTextInput placeholder="Enter your current password" color={theme.colors.textColor}
+                            <FocusableTextInput placeholder="Enter your current password"
+                                placeholderTextColor={theme.colors.tonal_a50}
+                                color={theme.colors.textColor}
                                 style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
                             />
                         </View>
                         <View style={Style.inputContainer}>
                             <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>New Password</Text>
-                            <FocusableTextInput placeholder="Enter your new password" color={theme.colors.textColor}
+                            <FocusableTextInput placeholder="Enter your new password"
+                                placeholderTextColor={theme.colors.tonal_a50}
+                                color={theme.colors.textColor}
                                 style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
                             />
                         </View>
                         <View style={Style.inputContainer}>
                             <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Confirm New Password</Text>
-                            <FocusableTextInput placeholder="Confirm your new password" color={theme.colors.textColor}
+                            <FocusableTextInput placeholder="Confirm your new password"
+                                placeholderTextColor={theme.colors.tonal_a50}
+                                color={theme.colors.textColor}
                                 style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }}
                             />
                         </View>

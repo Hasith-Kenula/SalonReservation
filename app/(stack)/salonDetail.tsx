@@ -2,7 +2,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useSocket } from '@/socket/socketProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -42,6 +42,7 @@ const SalonDetail = () => {
     const [salonOpeningHours, setSalonOpeningHours] = useState<SalonOpeningHours[] | null>(null);
     const [salonOpeningHoursLoading, setSalonOpeningHoursLoading] = useState(false);
     const { theme, isDark } = useTheme();
+    const router = useRouter();
 
     const getCustomerID = async () => {
         const customerJSON = await AsyncStorage.getItem('user');
@@ -359,6 +360,13 @@ const SalonDetail = () => {
 
                 <TouchableOpacity style={Style.reserveButton} onPress={handleReserve}>
                     <Text style={Style.reserveButtonText}>Reserve</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={Style.reserveButton} onPress={() => {
+                    router.push({
+                        pathname: "/(stack)/Payment",
+                    });
+                }}>
+                    <Text style={Style.reserveButtonText}>Pay Here</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
