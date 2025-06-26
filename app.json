@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.infinity.saloonreservation"
     },
     "android": {
+      "package": "com.infinity.saloonreservation",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

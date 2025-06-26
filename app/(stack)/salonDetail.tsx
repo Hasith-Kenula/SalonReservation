@@ -2,6 +2,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useSocket } from '@/socket/socketProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useStripe } from '@stripe/stripe-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -43,6 +44,9 @@ const SalonDetail = () => {
     const [salonOpeningHoursLoading, setSalonOpeningHoursLoading] = useState(false);
     const { theme, isDark } = useTheme();
     const router = useRouter();
+
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [loading, setLoading] = useState(false);
 
     const getCustomerID = async () => {
         const customerJSON = await AsyncStorage.getItem('user');
@@ -226,6 +230,67 @@ const SalonDetail = () => {
             <ActivityIndicator size='small' color='#3586DB' style={{ marginTop: 10 }} />
         );
     }
+
+
+    //Payments
+    const fetchPaymentSheetParams = async () => {
+        const response = await fetch(`http://192.168.1.2:3000/stripe-payment/payment-sheet`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const { paymentIntent, ephemeralKey, customer } = await response.json();
+
+        return {
+            paymentIntent,
+            ephemeralKey,
+            customer,
+        };
+    };
+
+    const initializePaymentSheet = async () => {
+        try {
+            const {
+                paymentIntent,
+                ephemeralKey,
+                customer,
+            } = await fetchPaymentSheetParams();
+
+            const { error } = await initPaymentSheet({
+                merchantDisplayName: "Example, Inc.",
+                customerId: customer,
+                customerEphemeralKeySecret: ephemeralKey,
+                paymentIntentClientSecret: paymentIntent,
+                // Set `allowsDelayedPaymentMethods` to true if your business can handle payment
+                //methods that complete payment after a delay, like SEPA Debit and Sofort.
+                allowsDelayedPaymentMethods: true,
+                defaultBillingDetails: {
+                    name: 'Jane Doe',
+                },
+                returnURL: 'saloonreservation://salon-detail',
+            });
+            if (!error) {
+                setLoading(true);
+            }
+
+        } catch (error: any) {
+            console.error(`Error: ${error.message}`);
+        }
+    };
+
+    const openPaymentSheet = async () => {
+        const { error } = await presentPaymentSheet();
+
+        if (error) {
+            Alert.alert(`Error code: ${error.code}`, error.message);
+        } else {
+            Alert.alert('Success', 'Your order is confirmed!');
+        }
+    };
+
+
+
     return (
         <SafeAreaView style={[Style.mainContainer, { backgroundColor: theme.colors.tonal_a0 }]} edges={['left', 'top', 'right']}>
             <View style={Style.headings}>
@@ -361,11 +426,13 @@ const SalonDetail = () => {
                 <TouchableOpacity style={Style.reserveButton} onPress={handleReserve}>
                     <Text style={Style.reserveButtonText}>Reserve</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={Style.reserveButton} onPress={() => {
-                    router.push({
-                        pathname: "/(stack)/Payment",
-                    });
-                }}>
+                <TouchableOpacity style={Style.reserveButton} onPress={async () => {
+                    await initializePaymentSheet().then(
+                        async () => {
+                            await openPaymentSheet();
+                        }
+                    )
+                }} >
                     <Text style={Style.reserveButtonText}>Pay Here</Text>
                 </TouchableOpacity>
             </ScrollView>
