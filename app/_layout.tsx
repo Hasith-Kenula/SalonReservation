@@ -26,10 +26,9 @@ const _layout = () => {
     }, []);
     if (loading) { return null; }
     return (
+
         <SocketProvider customerID={customerID} salonID={salonID} employeeID={employeeID}>
             <ThemeProvider>
-
-
                 <Stack initialRouteName='index'>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
                     <Stack.Screen name="forgotPassword" options={{ headerShown: false }} />

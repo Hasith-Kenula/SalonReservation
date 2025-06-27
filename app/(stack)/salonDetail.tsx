@@ -435,6 +435,7 @@ const SalonDetail = () => {
                 }} >
                     <Text style={Style.reserveButtonText}>Pay Here</Text>
                 </TouchableOpacity>
+
             </ScrollView>
         </SafeAreaView>
     );
