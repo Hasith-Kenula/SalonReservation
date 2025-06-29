@@ -1,5 +1,7 @@
 import { useTheme } from '@/context/ThemeContext';
+import { registerForPushNotificationsAsync } from '@/services/NotificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
@@ -47,7 +49,14 @@ type Salon = {
     address: string;
     ownerName: string;
 }
-
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+    }),
+});
 const SalonHome = () => {
     const router = useRouter();
     const [stats, setStats] = useState<Stats | null>(null);
@@ -170,7 +179,33 @@ const SalonHome = () => {
         },
 
     }
-
+    //notification
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState<Notifications.Notification | undefined>(undefined);
+    useEffect(() => {
+        registerForPushNotificationsAsync().then(
+            token => setExpoPushToken(token ?? 'Undefinde')
+        ).catch(
+            (error: any) => setExpoPushToken(`${error}`)
+        )
+        console.log(expoPushToken);
+        const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+            console.log(`Notification Receiverd: ${notification}`);
+            setNotification(notification);
+        });
+        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+            console.log(
+                "Notification Response: ",
+                JSON.stringify(response, null, 2),
+                JSON.stringify(response.notification.request.content.data, null, 2)
+            )
+            //handle notification response
+        })
+        return () => {
+            notificationListener.remove();
+            responseListener.remove();
+        }
+    }, []);
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: STYLE.background }]} edges={['top', 'right', 'left']}>
             {/* Header */}

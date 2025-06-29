@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "823538513049",
-    "project_id": "salonreservation-892fb",
-    "storage_bucket": "salonreservation-892fb.firebasestorage.app"
+    "project_number": "894885964045",
+    "project_id": "salonreservation-notification",
+    "storage_bucket": "salonreservation-notification.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:823538513049:android:eebf5526c031058aa37408",
+        "mobilesdk_app_id": "1:894885964045:android:79f48d67808f3860cf2844",
         "android_client_info": {
           "package_name": "com.infinity.saloonreservation"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD2qv40aWN82QcbYzLJasBZR717l4_8LGI"
+          "current_key": "AIzaSyAwy1F1i32tNlnc42EmMiJNAC0YSl3l6-Q"
         }
       ],
       "services": {

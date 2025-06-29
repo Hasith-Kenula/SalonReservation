@@ -5,34 +5,45 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "@gorhom/portal",
+          "firebase",
+          "socket.io-client",
+          "tslib"
+        ]
+      }
+    }
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.1.6",
     "@gorhom/portal": "^1.0.14",
     "@react-native-async-storage/async-storage": "^2.1.2",
-    "@react-native-community/datetimepicker": "8.3.0",
-    "@react-native-firebase/app": "^22.2.0",
-    "@react-native-firebase/auth": "^22.2.0",
+    "@react-native-community/datetimepicker": "8.4.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@stripe/stripe-react-native": "^0.45.0",
-    "expo": "^53.0.12",
+    "expo": "^53.0.13",
     "expo-application": "~6.1.4",
     "expo-blur": "~14.1.5",
     "expo-build-properties": "~0.14.6",
     "expo-constants": "~17.1.6",
+    "expo-dev-client": "~5.2.2",
     "expo-device": "~7.1.4",
-    "expo-firebase-recaptcha": "^1.4.4",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
     "expo-image": "~2.3.0",
     "expo-linking": "~7.1.5",
-    "expo-router": "~5.1.0",
+    "expo-notifications": "~0.31.3",
+    "expo-router": "~5.1.1",
     "expo-splash-screen": "~0.30.9",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
@@ -49,14 +60,12 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "^13.13.5",
     "socket.io-client": "^4.8.1",
-    "tslib": "^2.8.1",
-    "expo-notifications": "~0.31.3"
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@react-native-community/cli-server-api": "^18.0.0",
     "@types/react": "~19.0.10",
-    "@types/react-native": "^0.72.8",
     "eslint": "^9.25.0",
     "eslint-config-expo": "^9.2.0",
     "typescript": "~5.8.3"
