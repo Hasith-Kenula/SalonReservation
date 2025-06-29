@@ -41,6 +41,12 @@ type Reservation = {
     totalPrice: string;
 };
 
+type Salon = {
+    salonID: string;
+    salonName: string;
+    address: string;
+    ownerName: string;
+}
 
 const SalonHome = () => {
     const router = useRouter();
@@ -50,6 +56,18 @@ const SalonHome = () => {
     const [completedReservations, setCompletedReservations] = useState<Reservation[]>([]);
     const [tabBtnState, setTabBtnState] = useState<'pending' | 'processing' | 'completed'>('pending');
     const { theme, toggleTheme, isDark } = useTheme();
+
+    const [salon, setSalon] = useState<Salon | null>(null);
+
+    useEffect(() => {
+        const fetchSalon = async () => {
+            const salon = await AsyncStorage.getItem('user')
+            setSalon(JSON.parse(salon!))
+        }
+        fetchSalon();
+    }, [])
+
+    console.log(`Salon: ${JSON.stringify(salon)}`);
 
     const [salonID, setSalonID] = useState('');
     const socket = useSocket();
@@ -88,7 +106,7 @@ const SalonHome = () => {
             });
         } else {
 
-            console.log(result);
+            console.log("ERROR fetcting today stats", result);
         }
     }
     useEffect(() => {
@@ -152,6 +170,7 @@ const SalonHome = () => {
         },
 
     }
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: STYLE.background }]} edges={['top', 'right', 'left']}>
             {/* Header */}

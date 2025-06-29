@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SaloonReservation",
-    "slug": "SaloonReservation",
+    "slug": "salon-reservation",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -46,10 +46,18 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "89b59da3-8378-4c26-8931-751a97e4b06e"
+      }
+    },
+    "owner": "hasith-kenula"
   }
 }
