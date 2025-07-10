@@ -4,7 +4,7 @@
     "slug": "salon-reservation",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/infinity-icon.png",
     "scheme": "saloonreservation",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -22,7 +22,10 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "notifications": {
+        "icon": "./assets/images/infinity-icon.png"
+      }
     },
     "web": {
       "bundler": "metro",

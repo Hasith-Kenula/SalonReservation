@@ -51,9 +51,9 @@ type Salon = {
 }
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
+        shouldShowBanner: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
-        shouldShowBanner: true,
         shouldShowList: true,
     }),
 });
@@ -156,7 +156,7 @@ const SalonHome = () => {
     const handleCompletedBtn = () => {
         setTabBtnState('completed');
     }
-    // You can fetch real stats and reservations here
+
     const STYLE = {
         background: theme.colors.tonal_a0,
         textColor: theme.colors.textColor,
@@ -182,6 +182,28 @@ const SalonHome = () => {
     //notification
     const [expoPushToken, setExpoPushToken] = useState('');
     const [notification, setNotification] = useState<Notifications.Notification | undefined>(undefined);
+
+    useEffect(() => {
+        const saveToke = async () => {
+            await fetch('http://192.168.1.2:3000/notifications/save-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: expoPushToken,
+                    userID: salonID,
+                    role: 'salon',
+                })
+            })
+
+        }
+        if (expoPushToken) {
+            saveToke();
+        } else {
+            console.log('Cant save token');
+        }
+    }, [expoPushToken]);
     useEffect(() => {
         registerForPushNotificationsAsync().then(
             token => setExpoPushToken(token ?? 'Undefinde')

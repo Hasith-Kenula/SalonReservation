@@ -9,6 +9,7 @@ Notifications.setNotificationHandler({
     shouldSetBadge: true,
     shouldShowBanner: true,
     shouldShowList: true,
+    shouldShowAlert: true,
   }),
 });
 
@@ -19,6 +20,7 @@ export async function sendPushNotification(expoPushToken: string) {
     title: "Original Title",
     body: "And here is the body!",
     data: { someData: "goes here" },
+    priority: "high",
   };
 
   await fetch("https://exp.host/--/api/v2/push/send", {

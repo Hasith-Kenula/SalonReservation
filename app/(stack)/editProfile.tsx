@@ -1,7 +1,8 @@
 import { useTheme } from '@/context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../components/FocusableTextInput';
 
@@ -15,7 +16,11 @@ const EditProfile = () => {
     const [salonID, setSalonID] = useState('');
     const [customerID, setCustomerID] = useState('');
     const [ownerName, setOwnerName] = useState('');
+    const [latitude, setLatitude] = useState('');
+    const [longitude, setLongitude] = useState('');
     const { theme, isDark } = useTheme();
+
+    const [locationLoader, setLocationLoader] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -29,6 +34,8 @@ const EditProfile = () => {
 
                     setPhone(user.phone);
                     setAddress(user.address);
+                    setLatitude(user.latitude ? user.latitude.toString() : '');
+                    setLongitude(user.longitude ? user.longitude.toString() : '');
                     setRole(_role)
 
                     if (_role == 'Customer') {
@@ -60,12 +67,16 @@ const EditProfile = () => {
                     fullName: name,
                     phone: phone,
                     address: address,
+                    latitude: latitude,
+                    longitude: longitude,
                 }
                 apiUrl = `http://192.168.1.2:3000/customers/update/${customerID}`;
                 payload = {
                     fullName: name,
                     phone: phone,
-                    address: address
+                    address: address,
+                    latitude: latitude,
+                    longitude: longitude,
                 };
 
 
@@ -76,13 +87,17 @@ const EditProfile = () => {
                     ownerName: ownerName,
                     phone: phone,
                     address: address,
+                    latitude: latitude,
+                    longitude: longitude,
                 }
                 apiUrl = `http://192.168.1.2:3000/salons/update/${salonID}`
                 payload = {
                     salonName: name,
                     ownerName: ownerName,
                     phone: phone,
-                    address: address
+                    address: address,
+                    latitude: latitude,
+                    longitude: longitude,
                 }
 
 
@@ -105,6 +120,27 @@ const EditProfile = () => {
 
         } catch (error) {
             console.log(error)
+        }
+    }
+    // Get current location
+    const getGeoLocation = async () => {
+        setLocationLoader(true);
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({});
+            setLatitude(location.coords.latitude.toString());
+            setLongitude(location.coords.longitude.toString());
+            console.log(`Latitude: ${location.coords.latitude}, Longitude: ${location.coords.longitude}`);
+        } catch (error) {
+            console.error('Error getting location:', error);
+            alert('Error getting location');
+        } finally {
+            setLocationLoader(false);
         }
     }
 
@@ -161,13 +197,41 @@ const EditProfile = () => {
                         />
                     </View>
                     <View style={Style.inputContainer}>
-                        <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Location</Text>
+                        <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Address</Text>
                         <FocusableTextInput placeholder="Enter your location"
                             placeholderTextColor={theme.colors.tonal_a50}
                             value={address} color={theme.colors.textColor}
                             style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10 }} onChangeText={(text) => { setAddress(text) }}
                         />
                     </View>
+                    {role !== 'employee' && (
+                        <View style={Style.inputContainer}>
+                            <Text style={[Style.label, { color: theme.colors.primary_a50 }]}>Location</Text>
+                            <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                                <FocusableTextInput placeholder="latitude"
+                                    editable={false}
+                                    placeholderTextColor={theme.colors.tonal_a50}
+                                    value={latitude} color={theme.colors.textColor}
+                                    style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10, flexGrow: 1 }} onChangeText={(text) => { setLatitude(text) }}
+                                />
+                                <FocusableTextInput placeholder="longitude"
+                                    editable={false}
+                                    placeholderTextColor={theme.colors.tonal_a50}
+                                    value={longitude}
+                                    color={theme.colors.textColor}
+                                    Icon={null}
+                                    style={{ backgroundColor: theme.colors.tonal_a10, borderColor: theme.colors.tonal_a10, flexGrow: 1, }} onChangeText={(text) => { setLongitude(text) }}
+                                />
+                                <TouchableOpacity style={[Style.button, { padding: 5, width: 100 }]} onPress={() => { getGeoLocation() }} disabled={locationLoader}>
+                                    {locationLoader ? (
+                                        <ActivityIndicator size="small" color={'white'} />
+                                    ) : (
+                                        <Text style={Style.btnText}>Get Location</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
 
                     <View style={Style.passowrdContainer}>
                         <Text style={{ fontSize: 23, marginBottom: 10, fontWeight: '500', color: theme.colors.textColor }}>Change Password</Text>

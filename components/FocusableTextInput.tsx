@@ -9,11 +9,11 @@ interface FocusableTextInputProps extends TextInputProps {
 
 import { StyleProp, ViewStyle } from 'react-native';
 
-const FocusableTextInput = ({ Icon = null, IconPosition = 'right', color = 'black', style, ...props }: FocusableTextInputProps) => {
+const FocusableTextInput = ({ Icon = null, IconPosition = null, color = 'black', style, ...props }: FocusableTextInputProps) => {
     const [isFocused, setIsFocused] = useState(false);
 
     return (
-        <View style={[Style.inputWrapper, isFocused && Style.inputWrapperFocused, Icon && Style.inputWrapperWithIcon, style as StyleProp<ViewStyle>, { paddingLeft: IconPosition == 'left' ? 40 : 0, paddingRight: IconPosition == 'left' ? 0 : 40 }]}>
+        <View style={[Style.inputWrapper, isFocused && Style.inputWrapperFocused, Icon && Style.inputWrapperWithIcon, style as StyleProp<ViewStyle>, { paddingLeft: IconPosition == 'left' ? 40 : 0, paddingRight: IconPosition == 'right' ? 40 : 0 }]}>
             <TextInput
                 {...props}
 
@@ -31,7 +31,7 @@ const FocusableTextInput = ({ Icon = null, IconPosition = 'right', color = 'blac
                     }
                 }}
             />
-            {Icon && <View style={[Style.iconContainer, { left: IconPosition == 'left' ? 10 : 0 }]}>{Icon}</View>}
+            {Icon && (<View style={[Style.iconContainer, { left: IconPosition == 'left' ? 10 : 0 }]}>{Icon}</View>)}
         </View>
     );
 };

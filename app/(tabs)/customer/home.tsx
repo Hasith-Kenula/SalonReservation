@@ -1,11 +1,12 @@
 import { useTheme } from '@/context/ThemeContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDistance } from 'geolib';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ColorValue, FlatList, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusableTextInput from '../../../components/FocusableTextInput';
 import SalonCard from '../../../components/SalonCard';
-
 
 type Salon = {
   salonID: string;
@@ -14,6 +15,8 @@ type Salon = {
   address: string;
   phone: string;
   rate: number;
+  latitude: string | null;
+  longitude: string | null;
 }
 type Service = {
   serviceID: string;
@@ -21,6 +24,18 @@ type Service = {
   serviceName: string;
   servicePrice: number;
   durationMinutes: string
+}
+type User = {
+  customerID: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  location: Coords;
+}
+type Coords = {
+  latitude: string | null;
+  longitude: string | null;
 }
 const SearchIcon = (color: ColorValue) => {
   return (
@@ -31,6 +46,7 @@ const Home = () => {
   const [salons, setSalons] = useState<Salon[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
   const { theme, toggleTheme, isDark } = useTheme();
 
   // Fetch salons and services from API
@@ -53,7 +69,34 @@ const Home = () => {
     };
     fetchData();
   }, []);
-
+  //get user data from local storage
+  useEffect(() => {
+    try {
+      const getUserData = async () => {
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const parsedData = JSON.parse(userData);
+          const { latitude, longitude, ...rest } = parsedData;
+          setUser({
+            ...rest,
+            location: {
+              latitude: parsedData.latitude,
+              longitude: parsedData.longitude,
+            }
+          } as User);
+        } else {
+          setUser(null);
+          console.log('No user data found in local storage');
+        }
+      }
+      getUserData();
+    } catch (error) {
+      console.error('Error fetching user data from local storage:', error);
+      setUser(null);
+    }
+  }, []);
+  console.log('User data:', JSON.stringify(user));
+  console.log('Salon data:', JSON.stringify(salons));
   // Group services by salonID
   const getSalonServices = (salonID: string) => {
     return services.filter((s) => s.salonID === salonID);
@@ -61,10 +104,32 @@ const Home = () => {
 
 
   // Mock distance calculation (replace with real calculation if you have user location)
-  const getDistance = (salon: Salon) => {
-    // TODO: Replace with real distance calculation
-    return Math.floor(Math.random() * 10) + 1; // 1-10 km
-  };
+  const calculateDistance = (salonLocation: Coords) => {
+    try {
+      const customerLatitude = parseFloat(user?.location?.latitude || '');
+      const customerLogitude = parseFloat(user?.location?.longitude || '');
+
+      const salonLatitude = parseFloat(salonLocation.latitude || '');
+      const salonLongitude = parseFloat(salonLocation.longitude || '');
+
+      if (isNaN(customerLatitude) || isNaN(customerLogitude) || isNaN(salonLatitude) || isNaN(salonLongitude)) {
+        throw new Error('Invalid coordinates');
+      }
+      const distance = getDistance(
+        { latitude: customerLatitude, longitude: customerLogitude },
+        { latitude: salonLatitude, longitude: salonLongitude }
+      );
+      return {
+        distance: (distance / 1000).toFixed(2), // Convert meters to kilometers
+      }
+
+    } catch (error) {
+      console.warn('Error calculating distance:', error);
+      return {
+        distance: 'N/A',
+      };
+    }
+  }
 
   // Get price range for a salon's services
   const getPriceRange = (salonServices: Service[]) => {
@@ -74,14 +139,6 @@ const Home = () => {
     const max = Math.max(...prices);
     return min === max ? `LKR ${min}` : `LKR ${min} - ${max}`;
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#3586DB" />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.tonal_a0, height: '100%' }}>
@@ -98,6 +155,7 @@ const Home = () => {
           IconPosition={'left'}
         />
         <Switch onValueChange={toggleTheme} value={isDark} />
+        {loading && (<ActivityIndicator size="large" color="#3586DB" />)}
         <FlatList
           style={{ marginBottom: 100, paddingTop: 10, }}
           data={salons}
@@ -118,7 +176,7 @@ const Home = () => {
                   service: s.serviceName,
                   price: String(s.servicePrice),
                 }))}
-                distance={getDistance(item)}
+                distance={Number(calculateDistance({ latitude: item.latitude, longitude: item.longitude }).distance)}
                 rate={item.rate} // Placeholder for rating, set to null or 0 for now
                 priceRange={getPriceRange(salonServices)}
               // Add more props as needed
