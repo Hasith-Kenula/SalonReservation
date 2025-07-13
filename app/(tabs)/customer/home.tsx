@@ -17,6 +17,7 @@ type Salon = {
   rate: number;
   latitude: string | null;
   longitude: string | null;
+  distance?: number; // Optional distance property
 }
 type Service = {
   serviceID: string;
@@ -46,10 +47,11 @@ const Home = () => {
   const [salons, setSalons] = useState<Salon[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState('Loading...');
   const [user, setUser] = useState<User | null>(null);
   const { theme, toggleTheme, isDark } = useTheme();
 
-  // Fetch salons and services from API
+  // Fetch salons, services from API and user data from local storage
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -59,42 +61,86 @@ const Home = () => {
         const servicesRes = await fetch('http://192.168.1.2:3000/services');
         const servicesData = await servicesRes.json();
 
-        setSalons(salonsData.data || []);
         setServices(servicesData.data || []);
+        setSalons(salonsData.data || []);
+
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser({
+            ...parsedUser,
+            location: {
+              latitude: parsedUser.latitude || null,
+              longitude: parsedUser.longitude || null,
+            }
+          });
+        } else {
+          setUser(null);
+          console.warn('No user data found in local storage');
+        }
+
+        // if (user) {
+        //   const salonWithDistance = salonData.map((salon: Salon) => {
+        //     const distance = calculateDistance({
+        //       latitude: salon.latitude,
+        //       longitude: salon.longitude
+        //     });
+        //     return { ...salon, distance };
+        //   });
+
+        //   const sortedSalons = salonWithDistance.sort((a: any, b: any) => {
+        //     const isNaN_A = isNaN(a.distance);
+        //     const isNaN_B = isNaN(b.distance);
+        //     if (isNaN_A && !isNaN_B) return 1; // Both are NaN, keep original order
+        //     if (!isNaN_A && isNaN_B) return -1; // Both are NaN, keep original order
+        //     if (isNaN_A && isNaN_B) return 0; // Both are NaN, keep original order
+        //     return a.distance - b.distance; // Sort by distance
+        //   });
+        //   setSalons(sortedSalons);
+        // } else {
+        //   setSalons(salonData);
+        //   console.warn('No user data found, setting salons without distance');
+        // }
+
       } catch (err) {
-        alert('Failed to load salons or services');
+        alert('Failed to load data.');
       } finally {
         setLoading(false);
+        setLoadingText('No salons found.');
       }
     };
     fetchData();
   }, []);
-  //get user data from local storage
+
+
   useEffect(() => {
-    try {
-      const getUserData = async () => {
-        const userData = await AsyncStorage.getItem('user');
-        if (userData) {
-          const parsedData = JSON.parse(userData);
-          const { latitude, longitude, ...rest } = parsedData;
-          setUser({
-            ...rest,
-            location: {
-              latitude: parsedData.latitude,
-              longitude: parsedData.longitude,
-            }
-          } as User);
-        } else {
-          setUser(null);
-          console.log('No user data found in local storage');
-        }
-      }
-      getUserData();
-    } catch (error) {
-      console.error('Error fetching user data from local storage:', error);
-      setUser(null);
-    }
-  }, []);
+    if (!user || salons.length === 0) return;
+
+    const salonsWithDistance = salons.map(salon => {
+      const distance = calculateDistance({
+        latitude: salon.latitude,
+        longitude: salon.longitude
+      });
+
+      return { ...salon, distance };
+    });
+
+    const sorted = salonsWithDistance.sort((a, b) => {
+      const distanceA = a.distance; // Use Infinity if distance is NaN
+      const distanceB = b.distance; // Use Infinity if distance is NaN
+
+      const isNaN_A = isNaN(distanceA);
+      const isNaN_B = isNaN(distanceB);
+
+      if (isNaN_A && !isNaN_B) return 1; // Both are NaN, keep original order
+      if (!isNaN_A && isNaN_B) return -1; // Both are NaN, keep original order
+      if (isNaN_A && isNaN_B) return 0; // Both are NaN, keep original order
+      return distanceA - distanceB; // Sort by distance
+    });
+    setSalons(sorted);
+  }, [user, salons.length]);
+
+
   console.log('User data:', JSON.stringify(user));
   console.log('Salon data:', JSON.stringify(salons));
   // Group services by salonID
@@ -104,7 +150,7 @@ const Home = () => {
 
 
   // Mock distance calculation (replace with real calculation if you have user location)
-  const calculateDistance = (salonLocation: Coords) => {
+  const calculateDistance = (salonLocation: Coords): number => {
     try {
       const customerLatitude = parseFloat(user?.location?.latitude || '');
       const customerLogitude = parseFloat(user?.location?.longitude || '');
@@ -119,17 +165,16 @@ const Home = () => {
         { latitude: customerLatitude, longitude: customerLogitude },
         { latitude: salonLatitude, longitude: salonLongitude }
       );
-      return {
-        distance: (distance / 1000).toFixed(2), // Convert meters to kilometers
-      }
+      // Convert meters to kilometers and round to two decimals
+      return parseFloat((distance / 1000).toFixed(2)); // Convert meters to kilometers
 
     } catch (error) {
       console.warn('Error calculating distance:', error);
-      return {
-        distance: 'N/A',
-      };
+      return NaN; // Return NaN if there's an error
     }
   }
+
+
 
   // Get price range for a salon's services
   const getPriceRange = (salonServices: Service[]) => {
@@ -176,14 +221,14 @@ const Home = () => {
                   service: s.serviceName,
                   price: String(s.servicePrice),
                 }))}
-                distance={Number(calculateDistance({ latitude: item.latitude, longitude: item.longitude }).distance)}
+                distance={isNaN(item.distance!) ? 'NaN' : item.distance!.toFixed(2)} // Use distance if available
                 rate={item.rate} // Placeholder for rating, set to null or 0 for now
                 priceRange={getPriceRange(salonServices)}
               // Add more props as needed
               />
             );
           }}
-          ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>No salons found.</Text>}
+          ListEmptyComponent={<Text style={{ color: '#888', textAlign: 'center' }}>{loadingText}</Text>}
         />
       </View>
     </SafeAreaView>

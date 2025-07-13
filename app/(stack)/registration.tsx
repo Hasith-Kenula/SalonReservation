@@ -70,7 +70,8 @@ const Registration = () => {
                             ownerName: ownerName,
                             phone: phone,
                             address: address,
-                            password: password
+                            password: password,
+                            email: email,
                         }
                     } else {
                         alert('Passwords do not match');
@@ -87,7 +88,7 @@ const Registration = () => {
             });
             console.log(`Phone: ${phone}`);
             const result = await response.json();
-            console.log(`Result: ${result}`);
+            console.log(`Result: ${JSON.stringify(result)}`);
             if (result.success) {
                 alert('Registration successfully');
                 router.replace('/login');

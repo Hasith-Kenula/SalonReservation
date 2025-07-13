@@ -51,7 +51,7 @@ const ServiceManagement = () => {
                     setServices(result.data);
                     setLoading(false);
                 } else {
-                    Alert.alert('Error', result.message);
+                    Alert.alert('Alert', result.message);
                     console.log(result.message);
                     setLoading(false);
                 }

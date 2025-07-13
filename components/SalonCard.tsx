@@ -14,7 +14,7 @@ type SalonCardProps = {
     ownerName: string;
     address: string;
     services: Service[];
-    distance: number;
+    distance: string;
     rate: number | null;
     priceRange: string;
 };
